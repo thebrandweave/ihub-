@@ -137,3 +137,4 @@ try {
     echo json_encode(['success' => false, 'error' => 'Failed to create brand: ' . $e->getMessage()]);
 }
 
+

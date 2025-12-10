@@ -29,3 +29,4 @@ CREATE INDEX idx_products_brand ON products(brand_id);
 -- ==========================================
 SELECT 'Brands table migration completed successfully!' AS status;
 
+
