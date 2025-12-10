@@ -317,22 +317,22 @@ include __DIR__ . "/../includes/header.php";
 
                 <!-- Category and Brand -->
                 <div class="grid grid-cols-2 gap-4">
-                    <div>
-                        <label for="category_id" class="block text-sm font-medium text-gray-700 mb-1">Category</label>
-                        <div class="flex gap-2">
-                            <select name="category_id" id="category_id" class="flex-1 w-full px-4 py-2 border rounded-lg shadow-sm focus:ring-red-500 focus:border-transparent transition duration-150">
-                                <option value="">-- Select category --</option>
-                                <?php foreach ($categories as $category): ?>
-                                    <option value="<?= (int)$category['category_id'] ?>"
-                                        <?= ($formData['category_id'] !== '' && (int)$formData['category_id'] === (int)$category['category_id']) ? 'selected' : '' ?>>
-                                        <?= htmlspecialchars($category['name'], ENT_QUOTES, 'UTF-8') ?>
-                                    </option>
-                                <?php endforeach; ?>
-                            </select>
-                            <button type="button" id="createCategoryBtn"
-                                    class="px-4 py-2 text-sm font-medium text-white bg-red-600 hover:bg-red-700 rounded-lg shadow-sm transition-colors duration-150">
-                                + New
-                            </button>
+                <div>
+                    <label for="category_id" class="block text-sm font-medium text-gray-700 mb-1">Category</label>
+                    <div class="flex gap-2">
+                        <select name="category_id" id="category_id" class="flex-1 w-full px-4 py-2 border rounded-lg shadow-sm focus:ring-red-500 focus:border-transparent transition duration-150">
+                            <option value="">-- Select category --</option>
+                            <?php foreach ($categories as $category): ?>
+                                <option value="<?= (int)$category['category_id'] ?>"
+                                    <?= ($formData['category_id'] !== '' && (int)$formData['category_id'] === (int)$category['category_id']) ? 'selected' : '' ?>>
+                                    <?= htmlspecialchars($category['name'], ENT_QUOTES, 'UTF-8') ?>
+                                </option>
+                            <?php endforeach; ?>
+                        </select>
+                        <button type="button" id="createCategoryBtn"
+                                class="px-4 py-2 text-sm font-medium text-white bg-red-600 hover:bg-red-700 rounded-lg shadow-sm transition-colors duration-150">
+                            + New
+                        </button>
                         </div>
                     </div>
                     <div>

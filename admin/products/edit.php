@@ -310,16 +310,16 @@ include __DIR__ . "/../includes/header.php";
 
                 <!-- Category and Brand -->
                 <div class="grid grid-cols-2 gap-4">
-                    <div>
-                        <label for="category_id" class="block text-sm font-medium text-gray-700 mb-1">Category</label>
-                        <select name="category_id" id="category_id" class="w-full px-4 py-2 border rounded-lg shadow-sm focus:ring-red-500 focus:border-transparent transition duration-150">
-                            <option value="">-- Select category --</option>
-                            <?php foreach ($categories as $cat): ?>
-                                <option value="<?= $cat['category_id'] ?>" <?= $formData['category_id']==$cat['category_id']?'selected':'' ?>>
-                                    <?= htmlspecialchars($cat['name']) ?>
-                                </option>
-                            <?php endforeach ?>
-                        </select>
+                <div>
+                    <label for="category_id" class="block text-sm font-medium text-gray-700 mb-1">Category</label>
+                    <select name="category_id" id="category_id" class="w-full px-4 py-2 border rounded-lg shadow-sm focus:ring-red-500 focus:border-transparent transition duration-150">
+                        <option value="">-- Select category --</option>
+                        <?php foreach ($categories as $cat): ?>
+                            <option value="<?= $cat['category_id'] ?>" <?= $formData['category_id']==$cat['category_id']?'selected':'' ?>>
+                                <?= htmlspecialchars($cat['name']) ?>
+                            </option>
+                        <?php endforeach ?>
+                    </select>
                     </div>
                     <div>
                         <label for="brand_id" class="block text-sm font-medium text-gray-700 mb-1">Brand</label>

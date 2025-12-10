@@ -565,7 +565,7 @@ function getFinalPrice($price, $discount) {
                                 </div>
 
                                 <div class="d-flex align-items-center gap-2 mb-2">
-                                    <span class="category-label text-uppercase"><?= htmlspecialchars($p['category_name']) ?></span>
+                                <span class="category-label text-uppercase"><?= htmlspecialchars($p['category_name']) ?></span>
                                     <?php if (!empty($p['brand_name'])): ?>
                                         <span class="text-muted">•</span>
                                         <?php if (!empty($p['brand_logo'])): ?>

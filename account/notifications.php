@@ -19,14 +19,14 @@ $action = $_POST['action'] ?? 'get';
 switch ($action) {
     case 'count':
         try {
-            $stmt = $pdo->prepare("
-                SELECT COUNT(*) 
-                FROM notifications 
-                WHERE user_id = ? AND is_read = 0
-            ");
-            $stmt->execute([$user_id]);
-            $count = (int)($stmt->fetchColumn() ?? 0);
-            echo json_encode(['success' => true, 'count' => $count]);
+        $stmt = $pdo->prepare("
+            SELECT COUNT(*) 
+            FROM notifications 
+            WHERE user_id = ? AND is_read = 0
+        ");
+        $stmt->execute([$user_id]);
+        $count = (int)($stmt->fetchColumn() ?? 0);
+        echo json_encode(['success' => true, 'count' => $count]);
         } catch (PDOException $e) {
             error_log("Notification count error: " . $e->getMessage());
             echo json_encode(['success' => false, 'error' => 'Database error', 'count' => 0]);
@@ -55,13 +55,13 @@ switch ($action) {
 
     case 'mark_all_read':
         try {
-            $stmt = $pdo->prepare("
-                UPDATE notifications 
-                SET is_read = 1, read_at = NOW()
-                WHERE user_id = ? AND is_read = 0
-            ");
-            $stmt->execute([$user_id]);
-            echo json_encode(['success' => true]);
+        $stmt = $pdo->prepare("
+            UPDATE notifications 
+            SET is_read = 1, read_at = NOW()
+            WHERE user_id = ? AND is_read = 0
+        ");
+        $stmt->execute([$user_id]);
+        echo json_encode(['success' => true]);
         } catch (PDOException $e) {
             error_log("Mark all read error: " . $e->getMessage());
             echo json_encode(['success' => false, 'error' => 'Database error']);
@@ -71,24 +71,24 @@ switch ($action) {
     case 'get':
     default:
         try {
-            $stmt = $pdo->prepare("
+        $stmt = $pdo->prepare("
                 SELECT notification_id, type, title, message, image_url, target_url, is_read, created_at, read_at
-                FROM notifications
-                WHERE user_id = ?
+            FROM notifications
+            WHERE user_id = ?
                 ORDER BY is_read ASC, created_at DESC
                 LIMIT 50
-            ");
-            $stmt->execute([$user_id]);
-            $items = $stmt->fetchAll(PDO::FETCH_ASSOC) ?: [];
+        ");
+        $stmt->execute([$user_id]);
+        $items = $stmt->fetchAll(PDO::FETCH_ASSOC) ?: [];
 
             // Get unread count
             $countStmt = $pdo->prepare("SELECT COUNT(*) FROM notifications WHERE user_id = ? AND is_read = 0");
             $countStmt->execute([$user_id]);
             $unreadCount = (int)($countStmt->fetchColumn() ?? 0);
 
-            echo json_encode([
-                'success' => true,
-                'items'   => $items,
+        echo json_encode([
+            'success' => true,
+            'items'   => $items,
                 'unread_count' => $unreadCount
             ]);
         } catch (PDOException $e) {
@@ -97,7 +97,7 @@ switch ($action) {
                 'success' => false,
                 'error' => 'Database error',
                 'items' => []
-            ]);
+        ]);
         }
         exit;
 }

@@ -126,10 +126,10 @@ include __DIR__ . "/../includes/header.php";
 
             <!-- Category and Brand -->
             <div class="grid grid-cols-2 gap-4">
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Category</label>
-                    <div class="w-full px-4 py-2 border rounded-lg shadow-sm bg-gray-50 text-gray-900">
-                        <?= htmlspecialchars($product['category_name'] ?? 'Unassigned', ENT_QUOTES, 'UTF-8') ?>
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Category</label>
+                <div class="w-full px-4 py-2 border rounded-lg shadow-sm bg-gray-50 text-gray-900">
+                    <?= htmlspecialchars($product['category_name'] ?? 'Unassigned', ENT_QUOTES, 'UTF-8') ?>
                     </div>
                 </div>
                 <div>

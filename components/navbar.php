@@ -498,7 +498,7 @@ document.addEventListener("DOMContentLoaded", function() {
   const notificationDrawer = document.getElementById('notificationDrawer');
   if (notificationDrawer) {
     notificationDrawer.addEventListener('show.bs.offcanvas', function() {
-      loadNotificationDrawer();
+  loadNotificationDrawer();
     });
   }
   <?php endif; ?>
@@ -559,14 +559,14 @@ function updateNotificationCount() {
   })
   .then(data => {
     if (data.success) {
-      document.querySelectorAll(".notification-count").forEach(el => {
+    document.querySelectorAll(".notification-count").forEach(el => {
         el.textContent = data.count || 0;
       });
     } else {
       console.error("Notification count error:", data.error);
       document.querySelectorAll(".notification-count").forEach(el => {
         el.textContent = "0";
-      });
+    });
     }
   })
   .catch(error => {
@@ -656,15 +656,15 @@ function loadNotificationDrawer() {
                 <div class="d-flex justify-content-between align-items-center mb-1">
                   <div class="d-flex align-items-center gap-2">
                     ${isUnread ? `<span class="badge bg-danger" style="width:8px;height:8px;padding:0;border-radius:50%;"></span>` : ''}
-                    <span class="badge bg-light text-muted notification-type-pill">${typeLabel}</span>
+                  <span class="badge bg-light text-muted notification-type-pill">${typeLabel}</span>
                   </div>
                   <span class="small text-muted">${createdText}</span>
                 </div>
                 <div class="fw-semibold small mb-1">${item.title}</div>
                 <div class="small text-muted mb-1">${item.message}</div>
                 <div class="d-flex justify-content-between align-items-center mt-2">
-                  ${item.target_url ? `
-                    <a href="${item.target_url}" class="small text-primary text-decoration-none">View details</a>
+                ${item.target_url ? `
+                  <a href="${item.target_url}" class="small text-primary text-decoration-none">View details</a>
                   ` : `<span></span>`}
                   ${isUnread ? `
                     <button onclick="markNotificationRead(${notificationId}, this)" 
@@ -743,9 +743,9 @@ function markAllNotificationsRead() {
     return;
   }
   
-  fetch("<?= $BASE_URL ?>account/notifications.php", {
-    method: "POST",
-    body: new URLSearchParams({ action: "mark_all_read" })
+      fetch("<?= $BASE_URL ?>account/notifications.php", {
+        method: "POST",
+        body: new URLSearchParams({ action: "mark_all_read" })
   })
   .then(res => res.json())
   .then(data => {
@@ -753,16 +753,16 @@ function markAllNotificationsRead() {
       // Reload the drawer
       loadNotificationDrawer();
       // Update count
-      updateNotificationCount();
+        updateNotificationCount();
     } else {
       console.error("Failed to mark all as read:", data.error);
       alert("Failed to mark all notifications as read. Please try again.");
     }
-  })
+    })
   .catch(error => {
     console.error("Error marking all as read:", error);
     alert("An error occurred. Please try again.");
-  });
+    });
 }
 
 
