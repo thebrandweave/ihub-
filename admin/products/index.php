@@ -274,110 +274,102 @@ include __DIR__."/../includes/header.php";
 <?php if (count($products) > 0): ?>
 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6" id="productGrid">
     <?php foreach ($products as $p): ?>
+    <?php 
+    $discount = $p['discount'] ?? 0;
+    $finalPrice = $discount > 0 ? $p['price'] * (1 - $discount / 100) : $p['price'];
+    ?>
     <div class="product-card group" 
          data-name="<?= strtolower($p['name']) ?>"
          data-category="<?= strtolower($p['category_name']) ?>"
          data-status="<?= $p['status'] ?>">
         
-        <div class="bg-white rounded-lg shadow-sm border border-gray-200 flex flex-col relative h-full overflow-hidden transition-all duration-300 hover:shadow-xl hover:border-gray-300 group">
+        <div class="bg-white rounded-xl shadow-md border border-gray-200 relative h-80 overflow-hidden transition-all duration-300 hover:shadow-xl hover:border-red-300">
             
             <!-- Checkbox -->
             <div class="absolute top-3 left-3 z-30 opacity-0 group-hover:opacity-100 transition-opacity">
                 <input type="checkbox"
-                    class="w-5 h-5 rounded border-gray-300 text-red-600 selectBox focus:ring-red-500 focus:ring-2 cursor-pointer bg-white shadow-sm"
+                    class="w-5 h-5 rounded border-gray-300 text-red-600 selectBox focus:ring-red-500 focus:ring-2 cursor-pointer bg-white shadow-lg"
                     value="<?= $p['product_id'] ?>">
             </div>
 
-            <!-- Product Image -->
-            <div class="relative h-56 bg-gradient-to-br from-gray-50 to-gray-100 overflow-hidden">
-                <img src="<?= getImagePath($p['primary_image']) ?>"
-                    alt="<?= htmlspecialchars($p['name']) ?>"
-                    class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-                    onerror="this.src='https://via.placeholder.com/400x400?text=No+Image'">
+            <!-- Full Cover Image -->
+            <img src="<?= getImagePath($p['primary_image']) ?>"
+                alt="<?= htmlspecialchars($p['name']) ?>"
+                class="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                onerror="this.onerror=null;this.src='https://via.placeholder.com/400x500?text=No+Image'">
+            
+            <!-- Dark Overlay -->
+            <div class="absolute inset-0 bg-gradient-to-t from-black/85 via-black/50 to-black/30 group-hover:from-black/90 group-hover:via-black/65 transition-all duration-300"></div>
+            
+            <!-- Content Overlay -->
+            <div class="absolute inset-0 flex flex-col justify-between p-5">
                 
-                <!-- Status Badge -->
-                <span class="absolute top-3 right-3 px-3 py-1.5 text-xs font-bold rounded-md shadow-lg z-20 backdrop-blur-sm
-                    <?= $p['status'] == 'active'
-                        ? 'bg-red-500/90 text-white'
-                        : 'bg-red-300/90 text-white' ?>">
-                    <?= ucfirst($p['status']) ?>
-                </span>
-
-                <!-- Stock Indicator Overlay -->
-                <?php if ($p['stock'] < 5): ?>
-                    <div class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-red-600/90 to-transparent p-3">
-                        <p class="text-xs font-bold text-white flex items-center gap-1">
-                            <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
-                                <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
-                            </svg>
-                            Low Stock: <?= $p['stock'] ?> left
-                        </p>
-                    </div>
-                <?php endif; ?>
-            </div>
-
-            <!-- Product Info -->
-            <div class="p-5 flex-1 flex flex-col bg-white">
-                <!-- Category & Brand -->
-                <div class="mb-2">
-                    <div class="flex items-center gap-2 flex-wrap">
-                        <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-700">
-                            <?= htmlspecialchars($p['category_name']) ?>
+                <!-- Top Section: Status, Category, Brand, Title, Price -->
+                <div>
+                    <!-- Status Badge -->
+                    <div class="flex items-center justify-between mb-3">
+                        <span class="px-3 py-1.5 text-xs font-bold rounded-md shadow-lg backdrop-blur-sm
+                            <?= $p['status'] == 'active'
+                                ? 'bg-red-500/90 text-white'
+                                : 'bg-gray-500/90 text-white' ?>">
+                            <?= ucfirst($p['status']) ?>
                         </span>
-                        <?php if ($p['brand_name']): ?>
-                            <span class="text-xs text-gray-400">•</span>
-                            <span class="text-xs font-medium text-gray-600"><?= htmlspecialchars($p['brand_name']) ?></span>
-                        <?php endif; ?>
+                        
+                        <!-- Category & Brand Badge -->
+                        <div class="flex items-center gap-1.5">
+                            <span class="px-2 py-1 text-xs font-medium rounded backdrop-blur-sm bg-white/20 text-white border border-white/30">
+                                <?= htmlspecialchars($p['category_name']) ?>
+                            </span>
+                            <?php if ($p['brand_name']): ?>
+                                <span class="px-2 py-1 text-xs font-medium rounded backdrop-blur-sm bg-white/20 text-white border border-white/30">
+                                    <?= htmlspecialchars($p['brand_name']) ?>
+                                </span>
+                            <?php endif; ?>
+                        </div>
                     </div>
-                </div>
 
-                <!-- Product Name -->
-                <h3 class="text-base font-bold text-gray-900 mb-3 line-clamp-2 leading-snug cursor-pointer hover:text-red-600 transition-colors min-h-[3rem]"
-                    data-description="<?= htmlspecialchars($p['description'] ?: 'No description provided.') ?>"
-                    onmouseover="showDescription(this)"
-                    onmouseout="hideDescription()">
-                    <?= htmlspecialchars($p['name']) ?>
-                </h3>
+                    <!-- Product Name -->
+                    <h3 class="text-lg font-bold text-white mb-2 line-clamp-2 drop-shadow-lg leading-snug">
+                        <?= htmlspecialchars($p['name']) ?>
+                    </h3>
 
-                <!-- Price Section -->
-                <div class="mb-4">
-                    <?php 
-                    $discount = $p['discount'] ?? 0;
-                    $finalPrice = $discount > 0 ? $p['price'] * (1 - $discount / 100) : $p['price'];
-                    ?>
-                    <div class="flex items-baseline gap-2">
-                        <p class="text-2xl font-bold text-gray-900">₹<?= number_format($finalPrice, 0) ?></p>
-                        <?php if ($discount > 0): ?>
-                            <p class="text-sm text-gray-500 line-through">₹<?= number_format($p['price'], 0) ?></p>
-                            <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-bold bg-red-100 text-red-700">
-                                -<?= number_format($discount, 0) ?>%
+                    <!-- Price Section -->
+                    <div class="mb-2">
+                        <div class="flex items-baseline gap-2 flex-wrap">
+                            <p class="text-2xl font-bold text-white drop-shadow-md">₹<?= number_format($finalPrice, 0) ?></p>
+                            <?php if ($discount > 0): ?>
+                                <p class="text-sm text-white/80 line-through">₹<?= number_format($p['price'], 0) ?></p>
+                                <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-bold bg-red-500/90 text-white backdrop-blur-sm">
+                                    -<?= number_format($discount, 0) ?>%
+                                </span>
+                            <?php endif; ?>
+                        </div>
+                    </div>
+
+                    <!-- Stock Info -->
+                    <div class="flex items-center gap-3 mt-2">
+                        <p class="text-sm text-white/90 flex items-center gap-1 drop-shadow-md">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path>
+                            </svg>
+                            Stock: <?= $p['stock'] ?>
+                        </p>
+                        <?php if ($p['stock'] < 5): ?>
+                            <span class="px-2 py-0.5 text-xs font-bold rounded bg-red-500/90 text-white backdrop-blur-sm flex items-center gap-1">
+                                <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
+                                </svg>
+                                Low
                             </span>
                         <?php endif; ?>
                     </div>
                 </div>
 
-                <!-- Stock & Metrics -->
-                <div class="grid grid-cols-2 gap-3 mb-4 pt-4 border-t border-gray-100">
-                    <div>
-                        <p class="text-xs font-medium text-gray-500 mb-1">Stock</p>
-                        <div class="flex items-center gap-2">
-                            <p class="text-lg font-bold <?= $p['stock'] < 5 ? 'text-red-600' : ($p['stock'] < 20 ? 'text-red-500' : 'text-red-600') ?>">
-                                <?= $p['stock'] ?>
-                            </p>
-                            <span class="text-xs text-gray-500">units</span>
-                        </div>
-                    </div>
-                    <div>
-                        <p class="text-xs font-medium text-gray-500 mb-1">Value</p>
-                        <p class="text-lg font-bold text-gray-900">₹<?= number_format($p['price'] * $p['stock'], 0) ?></p>
-                    </div>
-                </div>
-
-                <!-- Action Buttons -->
-                <div class="mt-auto pt-4 border-t border-gray-100">
+                <!-- Bottom Section: Action Buttons (Hidden by default, shown on hover) -->
+                <div class="opacity-0 group-hover:opacity-100 transform translate-y-4 group-hover:translate-y-0 transition-all duration-300">
                     <div class="grid grid-cols-3 gap-2">
                         <a href="view.php?id=<?= $p['product_id'] ?>"
-                           class="flex flex-col items-center justify-center px-2 py-2.5 text-xs font-semibold text-center text-red-700 bg-red-50 hover:bg-red-100 rounded-md transition-all duration-150 hover:shadow-sm"
+                           class="flex flex-col items-center justify-center px-3 py-2.5 text-xs font-semibold text-center text-white bg-red-600/90 hover:bg-red-700 rounded-lg transition-all duration-200 hover:shadow-lg backdrop-blur-sm border border-white/20"
                            title="View Details">
                             <svg class="w-4 h-4 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
@@ -386,7 +378,7 @@ include __DIR__."/../includes/header.php";
                             <span>View</span>
                         </a>
                         <a href="edit.php?id=<?= $p['product_id'] ?>"
-                           class="flex flex-col items-center justify-center px-2 py-2.5 text-xs font-semibold text-center text-red-700 bg-red-50 hover:bg-red-100 rounded-md transition-all duration-150 hover:shadow-sm"
+                           class="flex flex-col items-center justify-center px-3 py-2.5 text-xs font-semibold text-center text-white bg-red-600/90 hover:bg-red-700 rounded-lg transition-all duration-200 hover:shadow-lg backdrop-blur-sm border border-white/20"
                            title="Edit Product">
                             <svg class="w-4 h-4 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
@@ -395,7 +387,7 @@ include __DIR__."/../includes/header.php";
                         </a>
                         <a href="delete.php?id=<?= $p['product_id'] ?>"
                            onclick="return confirm('Are you sure you want to delete this product?')"
-                           class="flex flex-col items-center justify-center px-2 py-2.5 text-xs font-semibold text-center text-red-700 bg-red-50 hover:bg-red-100 rounded-md transition-all duration-150 hover:shadow-sm"
+                           class="flex flex-col items-center justify-center px-3 py-2.5 text-xs font-semibold text-center text-white bg-white/20 hover:bg-red-600 rounded-lg transition-all duration-200 hover:shadow-lg backdrop-blur-sm border border-white/30"
                            title="Delete Product">
                             <svg class="w-4 h-4 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
@@ -405,9 +397,6 @@ include __DIR__."/../includes/header.php";
                     </div>
                 </div>
             </div>
-
-            <!-- Description Tooltip -->
-            <div id="description-tooltip" class="absolute z-50 bottom-full right-0 mb-2 w-72 p-4 bg-gray-900 text-white text-xs rounded-lg shadow-2xl hidden pointer-events-none border border-gray-700"></div>
         </div>
     </div>
     <?php endforeach; ?>
@@ -459,6 +448,11 @@ include __DIR__."/../includes/header.php";
 .product-card:hover {
     transform: translateY(-4px);
     box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+}
+
+/* Ensure card has fixed height */
+.product-card > div {
+    min-height: 320px;
 }
 
 /* Enhanced image hover effect */
@@ -606,46 +600,6 @@ searchInput.addEventListener("input", () => {
 // --- END: Instant Submission Logic ---
 
 
-// JAVASCRIPT FOR TOOLTIP (Description)
-let currentTooltip = null;
-
-function showDescription(element) {
-    const description = element.getAttribute('data-description');
-    
-    // Find the closest tooltip element relative to the hovered product card
-    const card = element.closest('.product-card');
-    const tooltip = card.querySelector('#description-tooltip');
-
-    // Ensure only one tooltip is active globally at a time
-    if (currentTooltip && currentTooltip !== tooltip) {
-        currentTooltip.classList.add('hidden');
-    }
-    currentTooltip = tooltip;
-
-    // Set content and make visible
-    tooltip.innerHTML = `<strong>Description:</strong><br>${description}`;
-    tooltip.classList.remove('hidden');
-}
-
-function hideDescription() {
-    // Hide the tooltip after a short delay if mouse leaves the product name
-    setTimeout(() => {
-        if (currentTooltip && !currentTooltip.matches(':hover')) {
-            currentTooltip.classList.add('hidden');
-            currentTooltip = null;
-        }
-    }, 100);
-}
-
-// Ensure tooltip hides if mouse leaves the area
-document.addEventListener('mouseout', (e) => {
-    if (currentTooltip) {
-        // Check if the mouse is moving outside of the product name or the tooltip itself
-        if (!e.relatedTarget || (!e.relatedTarget.closest('.product-card') && e.relatedTarget !== currentTooltip)) {
-             hideDescription();
-        }
-    }
-});
 </script>
 
 <?php include __DIR__."/../includes/footer.php"; ?>

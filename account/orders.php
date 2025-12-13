@@ -174,17 +174,32 @@ if (!function_exists('getOrderItemImage')) {
                 $itemsStmt->execute([$order['order_id']]);
                 $items = $itemsStmt->fetchAll(PDO::FETCH_ASSOC);
 
-                // Check which products have been reviewed by this user
+                // Check which products have been reviewed by this user (any status - once reviewed, can only edit)
                 $reviewedProducts = [];
+                $orderReviews = [];
                 if ($order['status'] === 'delivered' && !empty($items)) {
                     $productIds = array_column($items, 'product_id');
+                    // Get all reviewed products (any status)
                     $reviewStmt = $pdo->prepare("
                         SELECT product_id 
                         FROM reviews 
-                        WHERE user_id = ? AND product_id IN (" . implode(',', array_fill(0, count($productIds), '?')) . ")
+                        WHERE user_id = ? 
+                        AND product_id IN (" . implode(',', array_fill(0, count($productIds), '?')) . ")
                     ");
                     $reviewStmt->execute(array_merge([$user_id], $productIds));
                     $reviewedProducts = $reviewStmt->fetchAll(PDO::FETCH_COLUMN);
+                    
+                    // Fetch full review details for display
+                    $reviewDetailsStmt = $pdo->prepare("
+                        SELECT r.review_id, r.product_id, r.rating, r.comment, r.created_at, p.name as product_name
+                        FROM reviews r
+                        JOIN products p ON r.product_id = p.product_id
+                        WHERE r.user_id = ? 
+                        AND r.product_id IN (" . implode(',', array_fill(0, count($productIds), '?')) . ")
+                        ORDER BY r.created_at DESC
+                    ");
+                    $reviewDetailsStmt->execute(array_merge([$user_id], $productIds));
+                    $orderReviews = $reviewDetailsStmt->fetchAll(PDO::FETCH_ASSOC);
                 }
 
                 $itemCount = count($items);
@@ -258,6 +273,38 @@ if (!function_exists('getOrderItemImage')) {
                   </div>
                 <?php endif; ?>
 
+                <!-- Display Reviews -->
+                <?php if (!empty($orderReviews)): ?>
+                  <div class="mt-3 pt-3 border-top">
+                    <div class="small text-muted mb-2 fw-semibold">
+                      <i class="bi bi-star me-1"></i> Your Reviews
+                    </div>
+                    <div class="d-flex flex-column gap-2">
+                      <?php foreach ($orderReviews as $review): ?>
+                        <div class="bg-light rounded p-2">
+                          <div class="d-flex justify-content-between align-items-start mb-1">
+                            <div class="flex-grow-1">
+                              <div class="small fw-semibold"><?= htmlspecialchars($review['product_name']) ?></div>
+                              <div class="d-flex align-items-center gap-1 mb-1">
+                                <?php for ($i = 1; $i <= 5; $i++): ?>
+                                  <i class="bi bi-star-fill <?= $i <= $review['rating'] ? 'text-warning' : 'text-secondary' ?>" style="font-size: 0.75rem;"></i>
+                                <?php endfor; ?>
+                                <span class="small text-muted ms-1"><?= $review['rating'] ?>/5</span>
+                              </div>
+                              <?php if (!empty($review['comment'])): ?>
+                                <p class="small text-muted mb-0"><?= nl2br(htmlspecialchars(substr($review['comment'], 0, 150))) ?><?= strlen($review['comment']) > 150 ? '...' : '' ?></p>
+                              <?php endif; ?>
+                              <div class="small text-muted mt-1">
+                                Reviewed on <?= date("d M Y", strtotime($review['created_at'])) ?>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      <?php endforeach; ?>
+                    </div>
+                  </div>
+                <?php endif; ?>
+
                 <div class="d-flex justify-content-between align-items-center flex-wrap mt-2">
                   <div>
                     <span class="small text-muted">Status:</span>
@@ -281,6 +328,12 @@ if (!function_exists('getOrderItemImage')) {
                         <a href="review.php?order_id=<?= $order['order_id'] ?>"
                            class="btn btn-success btn-sm">
                            <i class="bi bi-star me-1"></i> Write Review
+                        </a>
+                      <?php endif; ?>
+                      <?php if (!empty($reviewedProducts) && !empty($orderReviews)): ?>
+                        <a href="review.php?order_id=<?= $order['order_id'] ?>"
+                           class="btn btn-outline-primary btn-sm">
+                           <i class="bi bi-pencil me-1"></i> Edit Review
                         </a>
                       <?php endif; ?>
                     <?php endif; ?>

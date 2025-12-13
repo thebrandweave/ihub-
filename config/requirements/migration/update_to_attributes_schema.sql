@@ -119,3 +119,4 @@ DROP TABLE IF EXISTS product_attributes_old;
 SELECT 'Migration completed successfully!' AS status;
 
 
+

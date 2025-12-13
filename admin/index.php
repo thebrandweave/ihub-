@@ -103,6 +103,36 @@ if (empty($topProducts)) {
     $topProducts = [['name' => 'No Data', 'total_sold' => 0, 'revenue' => 0]];
 }
 
+// Categories distribution (product count per category)
+$categoriesDistribution = $pdo->query("
+    SELECT c.name, COUNT(p.product_id) as product_count
+    FROM categories c
+    LEFT JOIN products p ON c.category_id = p.category_id
+    GROUP BY c.category_id, c.name
+    HAVING product_count > 0
+    ORDER BY product_count DESC
+    LIMIT 8
+")->fetchAll(PDO::FETCH_ASSOC);
+// If no data, add placeholder
+if (empty($categoriesDistribution)) {
+    $categoriesDistribution = [['name' => 'No Data', 'product_count' => 0]];
+}
+
+// Brands distribution (product count per brand)
+$brandsDistribution = $pdo->query("
+    SELECT b.name, COUNT(p.product_id) as product_count
+    FROM brands b
+    LEFT JOIN products p ON b.brand_id = p.brand_id
+    GROUP BY b.brand_id, b.name
+    HAVING product_count > 0
+    ORDER BY product_count DESC
+    LIMIT 8
+")->fetchAll(PDO::FETCH_ASSOC);
+// If no data, add placeholder
+if (empty($brandsDistribution)) {
+    $brandsDistribution = [['name' => 'No Data', 'product_count' => 0]];
+}
+
 // Monthly revenue comparison (last 6 months)
 $monthlyRevenue = $pdo->query("
     SELECT DATE_FORMAT(order_date, '%Y-%m') as month, 
@@ -387,6 +417,31 @@ function getStatusBadge($status) {
         </div>
         <div style="height: 320px; min-height: 320px;">
             <canvas id="categoryChart"></canvas>
+        </div>
+    </div>
+</div>
+
+<!-- Distribution Charts Grid -->
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+    <!-- Categories Distribution -->
+    <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+        <div class="mb-6">
+            <h2 class="text-lg font-semibold text-gray-800">Categories Distribution</h2>
+            <p class="text-sm text-gray-500 mt-1">Product count by category</p>
+        </div>
+        <div style="height: 320px; min-height: 320px;">
+            <canvas id="categoriesPieChart"></canvas>
+        </div>
+    </div>
+
+    <!-- Brands Distribution -->
+    <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+        <div class="mb-6">
+            <h2 class="text-lg font-semibold text-gray-800">Brands Distribution</h2>
+            <p class="text-sm text-gray-500 mt-1">Product count by brand</p>
+        </div>
+        <div style="height: 320px; min-height: 320px;">
+            <canvas id="brandsPieChart"></canvas>
         </div>
     </div>
 </div>
@@ -813,6 +868,130 @@ const topProductsChart = new Chart(topProductsCtx, {
         interaction: {
             intersect: false,
             mode: 'index'
+        }
+    }
+});
+
+// Categories Pie Chart
+<?php
+$categoryPieLabels = array_column($categoriesDistribution, 'name');
+$categoryPieValues = array_column($categoriesDistribution, 'product_count');
+// Define color palette matching the theme (red/pink gradient colors)
+$categoryColors = [
+    '#ef4444', '#f43f5e', '#ec4899', '#f97316',
+    '#e11d48', '#be185d', '#dc2626', '#991b1b'
+];
+?>
+const categoriesPieCtx = document.getElementById('categoriesPieChart').getContext('2d');
+const categoriesPieChart = new Chart(categoriesPieCtx, {
+    type: 'pie',
+    data: {
+        labels: <?= json_encode($categoryPieLabels) ?>,
+        datasets: [{
+            data: <?= json_encode($categoryPieValues) ?>,
+            backgroundColor: <?= json_encode(array_slice($categoryColors, 0, count($categoryPieLabels))) ?>,
+            borderColor: '#ffffff',
+            borderWidth: 2,
+            hoverOffset: 4
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: {
+                position: 'right',
+                labels: {
+                    padding: 12,
+                    usePointStyle: true,
+                    pointStyle: 'circle',
+                    font: {
+                        size: 12,
+                        weight: '500'
+                    },
+                    color: '#6b7280'
+                }
+            },
+            tooltip: {
+                backgroundColor: '#ffffff',
+                titleColor: '#111827',
+                bodyColor: '#4b5563',
+                borderColor: '#e5e7eb',
+                borderWidth: 1,
+                padding: 12,
+                cornerRadius: 6,
+                callbacks: {
+                    label: function(context) {
+                        const label = context.label || '';
+                        const value = context.parsed || 0;
+                        const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                        const percentage = ((value / total) * 100).toFixed(1);
+                        return label + ': ' + value + ' products (' + percentage + '%)';
+                    }
+                }
+            }
+        }
+    }
+});
+
+// Brands Pie Chart
+<?php
+$brandPieLabels = array_column($brandsDistribution, 'name');
+$brandPieValues = array_column($brandsDistribution, 'product_count');
+// Use the same color palette
+$brandColors = [
+    '#ef4444', '#f43f5e', '#ec4899', '#f97316',
+    '#e11d48', '#be185d', '#dc2626', '#991b1b'
+];
+?>
+const brandsPieCtx = document.getElementById('brandsPieChart').getContext('2d');
+const brandsPieChart = new Chart(brandsPieCtx, {
+    type: 'pie',
+    data: {
+        labels: <?= json_encode($brandPieLabels) ?>,
+        datasets: [{
+            data: <?= json_encode($brandPieValues) ?>,
+            backgroundColor: <?= json_encode(array_slice($brandColors, 0, count($brandPieLabels))) ?>,
+            borderColor: '#ffffff',
+            borderWidth: 2,
+            hoverOffset: 4
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: {
+                position: 'right',
+                labels: {
+                    padding: 12,
+                    usePointStyle: true,
+                    pointStyle: 'circle',
+                    font: {
+                        size: 12,
+                        weight: '500'
+                    },
+                    color: '#6b7280'
+                }
+            },
+            tooltip: {
+                backgroundColor: '#ffffff',
+                titleColor: '#111827',
+                bodyColor: '#4b5563',
+                borderColor: '#e5e7eb',
+                borderWidth: 1,
+                padding: 12,
+                cornerRadius: 6,
+                callbacks: {
+                    label: function(context) {
+                        const label = context.label || '';
+                        const value = context.parsed || 0;
+                        const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                        const percentage = ((value / total) * 100).toFixed(1);
+                        return label + ': ' + value + ' products (' + percentage + '%)';
+                    }
+                }
+            }
         }
     }
 });

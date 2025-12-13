@@ -92,3 +92,4 @@ DROP TABLE IF EXISTS product_groups;
 SELECT 'Migration completed successfully!' AS status;
 
 
+

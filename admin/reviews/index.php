@@ -314,6 +314,14 @@ $error = $_GET['error'] ?? null;
                                             </button>
                                         </form>
                                     <?php endif; ?>
+                                    <span class="text-gray-300">|</span>
+                                    <form method="POST" action="delete.php" class="inline" onsubmit="return confirm('Are you sure you want to delete this review? This action cannot be undone and will permanently delete the review and all associated images.');">
+                                        <input type="hidden" name="review_id" value="<?= $review['review_id'] ?>">
+                                        <button type="submit" 
+                                                class="text-red-600 hover:text-red-900 font-medium">
+                                            Delete
+                                        </button>
+                                    </form>
                                 </div>
                             </td>
                         </tr>

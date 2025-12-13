@@ -42,22 +42,33 @@ foreach ($items as $it) {
     $productNameMap[$it['product_id']] = $it['name'] ?? ('Product #' . $it['product_id']);
 }
 
-// Get already reviewed products
+// Get already reviewed products (any status - once reviewed, can only edit)
 $productIds = array_column($items, 'product_id');
 $reviewedProducts = [];
+$existingReviews = [];
 if (!empty($productIds)) {
     $reviewedStmt = $pdo->prepare("
-        SELECT product_id 
+        SELECT product_id, review_id, rating, comment 
         FROM reviews 
-        WHERE user_id = ? AND product_id IN (" . implode(',', array_fill(0, count($productIds), '?')) . ")
+        WHERE user_id = ? 
+        AND product_id IN (" . implode(',', array_fill(0, count($productIds), '?')) . ")
     ");
     $reviewedStmt->execute(array_merge([$user_id], $productIds));
-    $reviewedProducts = $reviewedStmt->fetchAll(PDO::FETCH_COLUMN);
+    $reviewedData = $reviewedStmt->fetchAll(PDO::FETCH_ASSOC);
+    $reviewedProducts = array_column($reviewedData, 'product_id');
+    
+    // Create a map of existing reviews for editing
+    foreach ($reviewedData as $rev) {
+        $existingReviews[$rev['product_id']] = $rev;
+    }
 }
 
-// Filter out already reviewed products
+// Separate items into new reviews and existing reviews to edit
 $itemsToReview = array_filter($items, function($item) use ($reviewedProducts) {
     return !in_array($item['product_id'], $reviewedProducts);
+});
+$itemsToEdit = array_filter($items, function($item) use ($reviewedProducts) {
+    return in_array($item['product_id'], $reviewedProducts);
 });
 
 // Image upload helper functions
@@ -156,26 +167,55 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['reviews'])) {
                 throw new Exception("Product not found in order");
             }
             
-            // Check if review already exists
+            // Check if review already exists - if so, update it instead of creating new
             $existingStmt = $pdo->prepare("
                 SELECT review_id 
                 FROM reviews 
                 WHERE user_id = ? AND product_id = ?
             ");
             $existingStmt->execute([$user_id, $product_id]);
-            if ($existingStmt->fetchColumn()) {
-                continue; // Skip if already reviewed
-            }
+            $existingReviewId = $existingStmt->fetchColumn();
             
-            // Insert review
-            $insertStmt = $pdo->prepare("
-                INSERT INTO reviews (user_id, product_id, rating, comment, status)
-                VALUES (?, ?, ?, ?, 'pending')
-            ");
-            $insertStmt->execute([$user_id, $product_id, $rating, $comment]);
-            $reviewId = (int)$pdo->lastInsertId();
+            if ($existingReviewId) {
+                // Update existing review
+                $updateStmt = $pdo->prepare("
+                    UPDATE reviews 
+                    SET rating = ?, comment = ?, status = 'pending', created_at = NOW()
+                    WHERE review_id = ?
+                ");
+                $updateStmt->execute([$rating, $comment, $existingReviewId]);
+                $reviewId = (int)$existingReviewId;
+            } else {
+                // Insert new review
+                $insertStmt = $pdo->prepare("
+                    INSERT INTO reviews (user_id, product_id, rating, comment, status)
+                    VALUES (?, ?, ?, ?, 'pending')
+                ");
+                $insertStmt->execute([$user_id, $product_id, $rating, $comment]);
+                $reviewId = (int)$pdo->lastInsertId();
+            }
 
             // Handle image uploads (multiple)
+            // Delete old images when updating
+            if ($existingReviewId) {
+                // Get old images
+                $oldImagesStmt = $pdo->prepare("SELECT image FROM review_images WHERE review_id = ?");
+                $oldImagesStmt->execute([$reviewId]);
+                $oldImages = $oldImagesStmt->fetchAll(PDO::FETCH_COLUMN);
+                
+                // Delete old images from database
+                $deleteImgStmt = $pdo->prepare("DELETE FROM review_images WHERE review_id = ?");
+                $deleteImgStmt->execute([$reviewId]);
+                
+                // Delete old images from filesystem
+                foreach ($oldImages as $oldImg) {
+                    $oldImgPath = $uploadDir . '/' . $oldImg;
+                    if (file_exists($oldImgPath)) {
+                        @unlink($oldImgPath);
+                    }
+                }
+            }
+            
             if (isset($_FILES['reviews']['name'][$product_id]['images'])) {
                 $files = [
                     'name' => $_FILES['reviews']['name'][$product_id]['images'],
@@ -323,7 +363,7 @@ function getOrderItemImage(array $item): string {
           <div class="alert alert-danger"><?= htmlspecialchars($error) ?></div>
         <?php endif; ?>
 
-        <?php if (empty($itemsToReview)): ?>
+        <?php if (empty($itemsToReview) && empty($itemsToEdit)): ?>
           <div class="profile-card text-center text-muted">
             <i class="bi bi-check-circle fs-1 mb-2 text-success"></i>
             <p class="mb-1">All products from this order have been reviewed.</p>
@@ -340,6 +380,9 @@ function getOrderItemImage(array $item): string {
           </div>
 
           <form method="POST" id="reviewForm" enctype="multipart/form-data">
+            <?php if (!empty($itemsToReview)): ?>
+              <h5 class="mb-3">Write New Reviews</h5>
+            <?php endif; ?>
             <?php foreach ($itemsToReview as $item): ?>
               <div class="profile-card mb-3">
                 <div class="d-flex gap-3 mb-3">
@@ -392,6 +435,67 @@ function getOrderItemImage(array $item): string {
                 </div>
               </div>
             <?php endforeach; ?>
+            
+            <?php if (!empty($itemsToEdit)): ?>
+              <h5 class="mb-3 mt-4">Edit Existing Reviews</h5>
+              <?php foreach ($itemsToEdit as $item): ?>
+                <?php 
+                  $existingReview = $existingReviews[$item['product_id']] ?? null;
+                  $existingRating = $existingReview['rating'] ?? 0;
+                  $existingComment = $existingReview['comment'] ?? '';
+                ?>
+                <div class="profile-card mb-3">
+                  <div class="d-flex gap-3 mb-3">
+                    <img src="<?= htmlspecialchars(getOrderItemImage($item)) ?>" 
+                         alt="<?= htmlspecialchars($item['name']) ?>" 
+                         width="80" height="80"
+                         class="rounded border object-fit-cover">
+                    <div class="flex-grow-1">
+                      <h6 class="mb-1"><?= htmlspecialchars($item['name']) ?></h6>
+                      <p class="text-muted small mb-0">Product ID: <?= $item['product_id'] ?></p>
+                    </div>
+                  </div>
+
+                  <div class="mb-3">
+                    <label class="form-label fw-semibold">Rating <span class="text-danger">*</span></label>
+                    <div class="star-rating-container" data-product-id="<?= $item['product_id'] ?>">
+                      <?php for ($i = 5; $i >= 1; $i--): ?>
+                        <i class="bi bi-star-fill star-rating <?= $i <= $existingRating ? 'selected active' : '' ?>" 
+                           data-rating="<?= $i ?>" 
+                           onclick="selectRating(<?= $item['product_id'] ?>, <?= $i ?>)"></i>
+                      <?php endfor; ?>
+                    </div>
+                    <input type="hidden" name="reviews[<?= $item['product_id'] ?>][rating]" 
+                           id="rating_<?= $item['product_id'] ?>" value="<?= $existingRating ?>" required>
+                  </div>
+
+                  <div class="mb-3">
+                    <label for="comment_<?= $item['product_id'] ?>" class="form-label fw-semibold">
+                      Your Review (Optional)
+                    </label>
+                    <textarea class="form-control" 
+                              name="reviews[<?= $item['product_id'] ?>][comment]" 
+                              id="comment_<?= $item['product_id'] ?>" 
+                              rows="3" 
+                              placeholder="Share your experience with this product..."><?= htmlspecialchars($existingComment) ?></textarea>
+                  </div>
+
+                  <div class="mb-0">
+                    <label for="image_<?= $item['product_id'] ?>" class="form-label fw-semibold">
+                      Add Photos (Optional)
+                    </label>
+                    <input type="file" 
+                           class="form-control" 
+                           name="reviews[<?= $item['product_id'] ?>][images][]" 
+                           id="image_<?= $item['product_id'] ?>" 
+                           accept="image/jpeg,image/jpg,image/png,image/gif,image/webp"
+                           multiple>
+                    <small class="text-muted">Up to 5 images, each max 5MB. Formats: JPEG, PNG, GIF, WebP. Uploading new images will replace existing ones.</small>
+                    <div class="mt-2" id="preview_<?= $item['product_id'] ?>"></div>
+                  </div>
+                </div>
+              <?php endforeach; ?>
+            <?php endif; ?>
 
             <div class="d-flex gap-2">
               <button type="submit" class="btn btn-primary">
@@ -428,7 +532,7 @@ function selectRating(productId, rating) {
 }
 
 // Image previews (multiple)
-<?php foreach ($itemsToReview as $item): ?>
+<?php foreach (array_merge($itemsToReview, $itemsToEdit ?? []) as $item): ?>
 document.getElementById('image_<?= $item['product_id'] ?>').addEventListener('change', function(e) {
     const files = Array.from(e.target.files || []);
     const preview = document.getElementById('preview_<?= $item['product_id'] ?>');
@@ -465,7 +569,7 @@ document.getElementById('image_<?= $item['product_id'] ?>').addEventListener('ch
 
 // Form validation
 document.getElementById('reviewForm').addEventListener('submit', function(e) {
-    const items = <?= json_encode(array_column($itemsToReview, 'product_id')) ?>;
+    const items = <?= json_encode(array_column(array_merge($itemsToReview, $itemsToEdit ?? []), 'product_id')) ?>;
     let allRated = true;
     
     items.forEach(productId => {
