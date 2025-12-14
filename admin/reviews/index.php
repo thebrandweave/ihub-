@@ -221,7 +221,6 @@ $error = $_GET['error'] ?? null;
                                         <div class="text-sm font-medium text-gray-900">
                                             <?= htmlspecialchars($review['product_name']) ?>
                                         </div>
-                                        <div class="text-xs text-gray-500">ID: <?= $review['product_id'] ?></div>
                                     </div>
                                 </div>
                             </td>

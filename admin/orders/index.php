@@ -221,9 +221,6 @@ $error = $_GET['error'] ?? null;
                         <div class="text-sm font-semibold text-gray-800">
                             <?= !empty($o['order_number']) ? htmlspecialchars($o['order_number']) : '#' . $o['order_id'] ?>
                         </div>
-                        <?php if (!empty($o['order_number'])): ?>
-                        <div class="text-xs text-gray-500">ID: #<?= $o['order_id'] ?></div>
-                        <?php endif; ?>
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap">
                         <div class="flex items-center">

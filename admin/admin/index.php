@@ -162,7 +162,6 @@ $error = $_GET['error'] ?? null;
                                 </div>
                                 <div class="ml-4">
                                     <div class="text-sm font-semibold text-gray-800"><?= htmlspecialchars($a['full_name']) ?></div>
-                                    <div class="text-xs text-gray-500">ID: #<?= $a['user_id'] ?></div>
                                 </div>
                             </div>
                         </td>
