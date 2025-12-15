@@ -397,7 +397,7 @@ function getFinalPrice($price, $discount) {
           <a href="<?= $BASE_URL ?>shop/?category=<?= $cat['category_id'] ?>" class="text-decoration-none text-dark">
             <div class="p-3 rounded text-center">
               <?php if (!empty($cat['image_url'])): ?>
-                <img src="<?= $BASE_URL ?>uploads/categories/<?= htmlspecialchars($cat['image_url']) ?>" alt="<?= htmlspecialchars($cat['name']) ?>" class="w-50 mb-2" style="object-fit: cover; border-radius: 8px;">
+                <img src="<?= $BASE_URL ?>uploads/categories/<?= htmlspecialchars($cat['image_url']) ?>" alt="<?= htmlspecialchars($cat['name']) ?>" class="w-50 mb-2" style="object-fit: cover; border-radius: 50%;">
               <?php else: ?>
                 <img src="https://via.placeholder.com/150" alt="<?= htmlspecialchars($cat['name']) ?>" class="w-50 mb-2">
               <?php endif; ?>
