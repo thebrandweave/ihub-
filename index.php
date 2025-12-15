@@ -146,15 +146,12 @@ function getFinalPrice($price, $discount) {
 
     /* --- Product Card Styles --- */
     .product-card {
-      border-radius: var(--card-radius);
-      border: none;
       transition: transform 0.3s ease, box-shadow 0.3s ease;
       position: relative;
     }
 
     .product-card:hover {
       transform: translateY(-5px);
-      box-shadow: 0 12px 30px rgba(15, 23, 42, 0.1);
     }
 
     .product-card .image-wrapper {
@@ -393,12 +390,12 @@ function getFinalPrice($price, $discount) {
 
 <section class="py-5 container-fluid bg-white">
   <div class="container">
-    <h2 class="fw-bold mb-4">Top Categories</h2>
+    <!-- <h2 class="fw-bold mb-4">Top Categories</h2> -->
     <div class="row g-4">
       <?php foreach ($categories as $cat): ?>
         <div class="col-6 col-md-3">
           <a href="<?= $BASE_URL ?>shop/?category=<?= $cat['category_id'] ?>" class="text-decoration-none text-dark">
-            <div class="p-3 bg-light rounded text-center shadow-sm">
+            <div class="p-3 rounded text-center">
               <?php if (!empty($cat['image_url'])): ?>
                 <img src="<?= $BASE_URL ?>uploads/categories/<?= htmlspecialchars($cat['image_url']) ?>" alt="<?= htmlspecialchars($cat['name']) ?>" class="w-50 mb-2" style="object-fit: cover; border-radius: 8px;">
               <?php else: ?>
@@ -426,7 +423,7 @@ function getFinalPrice($price, $discount) {
           $wishlistActiveClass = $isWishlisted ? 'wishlist-active' : '';
         ?>
         <div class="col-6 col-md-3">
-          <div class="product-card bg-white p-3 h-100">
+          <div class="product-card  p-3 h-100">
             <?php if (($product['discount'] ?? 0) > 0): ?>
               <span class="badge-sale">-<?= number_format($product['discount'], 0) ?>%</span>
             <?php endif; ?>

@@ -32,3 +32,4 @@ SELECT 'Brands table migration completed successfully!' AS status;
 
 
 
+

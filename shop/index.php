@@ -188,16 +188,12 @@ function getFinalPrice($price, $discount) {
 
     /* Product Card Styles */
     .product-card {
-        border-radius: var(--card-radius);
-        border: none;
         transition: transform 0.3s ease, box-shadow 0.3s ease;
         position: relative;
-        background: transparent;
     }
 
     .product-card:hover {
         transform: translateY(-5px);
-        box-shadow: 0 12px 30px rgba(15, 23, 42, 0.1);
     }
 
     .product-card .image-wrapper {

@@ -32,13 +32,12 @@ try {
       background:#f1f5f9; padding:70px 0; text-align:center;
     }
     .cat-card{
-      background:white; padding:20px; border-radius:12px;
-      text-align:center; box-shadow:0 0 15px rgba(0,0,0,0.05);
+      padding:20px;
+      text-align:center;
       transition:0.2s;
     }
     .cat-card:hover{
       transform:translateY(-5px);
-      box-shadow:0px 8px 25px rgba(0,0,0,0.1);
     }
     .cat-card img{
       width:100px; height:100px; object-fit:cover; border-radius:10px;
@@ -71,7 +70,7 @@ try {
             <?php endif; ?>
 
             <h6 class="fw-bold mt-3"><?= htmlspecialchars($cat['name']) ?></h6>
-            <p class="text-secondary small"><?= htmlspecialchars($cat['description'] ?? '') ?></p>
+            <!-- <p class="text-secondary small"><?= htmlspecialchars($cat['description'] ?? '') ?></p> -->
 
           </div>
         </a>
