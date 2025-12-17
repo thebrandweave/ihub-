@@ -8,3 +8,4 @@ ADD COLUMN image VARCHAR(255) DEFAULT NULL AFTER comment;
 
 
 
+
