@@ -293,3 +293,13 @@ CREATE INDEX idx_products_brand ON products(brand_id);
 CREATE INDEX idx_cart_user ON cart(user_id);
 CREATE INDEX idx_orders_user ON orders(user_id);
 CREATE INDEX idx_reviews_product ON reviews(product_id);
+
+
+-- ==========================================
+-- 1️⃣8️⃣ FEATURED PRODUCTS TABLE (Simple)
+-- ==========================================
+CREATE TABLE featured_products (
+    product_id INT PRIMARY KEY,
+    added_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (product_id) REFERENCES products(product_id) ON DELETE CASCADE
+);

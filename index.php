@@ -11,12 +11,31 @@ try {
     $categories = [];
 }
 
+
+// Fetch featured products (from featured_products table)
+$featuredProducts = [];
+try {
+    $featStmt = $pdo->query("
+        SELECT p.*, c.name as category_name,
+               (SELECT image_url FROM product_images WHERE product_id = p.product_id AND is_primary = 1 LIMIT 1) as primary_image
+        FROM featured_products fp
+        JOIN products p ON fp.product_id = p.product_id
+        LEFT JOIN categories c ON p.category_id = c.category_id
+        WHERE p.status = 'active'
+        ORDER BY fp.added_at DESC
+        LIMIT 4
+    ");
+    $featuredProducts = $featStmt->fetchAll(PDO::FETCH_ASSOC);
+} catch (PDOException $e) {
+    $featuredProducts = [];
+}
+
 // Fetch trending products (active products with stock)
 $trendingProducts = [];
 try {
     $trendStmt = $pdo->query("
         SELECT p.*, c.name as category_name,
-               (SELECT image_url FROM product_images WHERE product_id = p.product_id AND is_primary = 1 LIMIT 1) as primary_image
+                (SELECT image_url FROM product_images WHERE product_id = p.product_id AND is_primary = 1 LIMIT 1) as primary_image
         FROM products p
         LEFT JOIN categories c ON p.category_id = c.category_id
         WHERE p.status = 'active' AND p.stock > 0
@@ -33,7 +52,7 @@ $popularProducts = [];
 try {
     $popStmt = $pdo->query("
         SELECT p.*, c.name as category_name,
-               (SELECT image_url FROM product_images WHERE product_id = p.product_id AND is_primary = 1 LIMIT 1) as primary_image
+                (SELECT image_url FROM product_images WHERE product_id = p.product_id AND is_primary = 1 LIMIT 1) as primary_image
         FROM products p
         LEFT JOIN categories c ON p.category_id = c.category_id
         WHERE p.status = 'active'
@@ -144,6 +163,179 @@ function getFinalPrice($price, $discount) {
       --brand-primary: #0d6efd;
     }
 
+/* --- Unified Hero Boxed Design --- */
+.hero-carousel-wrapper {
+    padding: 2rem 0;
+    background-color: #f8fafc;
+}
+
+.hero-boxed-container {
+    position: relative;
+    border-radius: 12px; /* Matches your --card-radius */
+    overflow: hidden;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+}
+
+.hero-boxed-container .carousel-item {
+    height: 500px;
+    background-color: #f5f7fb;
+}
+
+.hero-boxed-container img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+/* Matching the Promo Overlay style */
+.hero-promo-overlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to right, rgba(0,0,0,0.75) 0%, rgba(0,0,0,0.2) 60%, transparent 100%);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 0 10%; /* Matches desktop spacing */
+    z-index: 2;
+}
+
+.hero-content h1 {
+    color: #fff;
+    font-weight: 700;
+    font-size: 3.5rem;
+    margin-bottom: 1.5rem;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+    max-width: 600px;
+}
+
+/* Matching your .promo-btn style */
+.hero-btn {
+    display: inline-flex;
+    align-items: center;
+    background: #fff;
+    color: #0f172a;
+    padding: 12px 32px;
+    border-radius: 50px;
+    font-weight: 600;
+    text-decoration: none;
+    width: fit-content;
+    transition: all 0.3s ease;
+}
+
+.hero-btn:hover {
+    background: var(--brand-primary);
+    color: white;
+    transform: translateY(-2px);
+}
+
+/* Responsive Scaling */
+@media (max-width: 991px) {
+    .hero-content h1 { font-size: 2.5rem; }
+    .hero-boxed-container .carousel-item { height: 400px; }
+}
+
+@media (max-width: 768px) {
+    .hero-promo-overlay {
+        padding: 2rem;
+        background: linear-gradient(to top, rgba(0,0,0,0.8) 0%, rgba(0,0,0,0.3) 100%);
+        justify-content: flex-end;
+        text-align: center;
+    }
+    .hero-content {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+    .hero-content h1 { font-size: 1.8rem; }
+    .hero-boxed-container .carousel-item { height: 350px; }
+}
+
+
+
+/* --- Category Carousel Styles --- */
+.category-slider-wrapper {
+    position: relative;
+    padding: 20px 0;
+}
+
+.category-scroll-container {
+    display: flex;
+    overflow-x: auto;
+    gap: 20px;
+    padding-bottom: 15px;
+    scrollbar-width: none; /* Firefox */
+    -ms-overflow-style: none;  /* IE/Edge */
+}
+
+.category-scroll-container::-webkit-scrollbar {
+    display: none; /* Chrome/Safari/Webview */
+}
+
+.category-card-link {
+    flex: 0 0 auto;
+    width: 140px; /* Width of each category item */
+    text-align: center;
+    text-decoration: none;
+    transition: transform 0.3s ease;
+}
+
+.category-card-link:hover {
+    transform: translateY(-5px);
+}
+
+.category-circle-md {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    background: #fff;
+    margin: 0 auto 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid #e2e8f0;
+    overflow: hidden;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+
+.category-circle-md img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.category-name-label {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #1e293b;
+    display: block;
+}
+
+    /* --- Category Circle Styles --- */
+    .category-item {
+      text-align: center;
+      transition: transform 0.3s ease;
+    }
+    .category-item:hover {
+      transform: translateY(-5px);
+    }
+    .category-circle {
+      width: 120px;
+      height: 120px;
+      border-radius: 50%;
+      overflow: hidden;
+      margin: 0 auto 15px;
+      background: #f8f9fa;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: 1px solid #eee;
+    }
+    .category-circle img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
     /* --- Product Card Styles --- */
     .product-card {
       transition: transform 0.3s ease, box-shadow 0.3s ease;
@@ -197,12 +389,11 @@ function getFinalPrice($price, $discount) {
         justify-content: center;
         gap: 12px;
         opacity: 0;
-        transform: translateY(20px); /* Start slightly down */
+        transform: translateY(20px); 
         transition: all 0.3s ease-in-out;
         z-index: 5;
     }
 
-    /* Show icons when hovering the card */
     .product-card:hover .overlay-actions {
         opacity: 1;
         transform: translateY(0);
@@ -366,46 +557,108 @@ function getFinalPrice($price, $discount) {
 
 <?php include __DIR__ . "/components/navbar.php"; ?>
 
-<section class="hero container-fluid bg-light">
-  <div class="container py-5">
-    <div class="row align-items-center">
+<section class="hero-carousel-wrapper">
+    <div class="container">
+        <div class="hero-boxed-container">
+            <div id="heroAdCarousel" class="carousel slide carousel-fade" data-bs-ride="carousel">
+                
+                <div class="carousel-indicators">
+                    <?php foreach ($heroAds as $index => $ad): ?>
+                        <button type="button" data-bs-target="#heroAdCarousel" data-bs-slide-to="<?= $index ?>" 
+                                class="<?= $index === 0 ? 'active' : '' ?>" aria-current="true"></button>
+                    <?php endforeach; ?>
+                </div>
 
-      <div class="col-lg-6 mb-4">
-        <h1 class="fw-bold display-5">Gear up for adventure — built for every journey</h1>
-        <p class="text-secondary mt-3">Lightweight tents, thermal sleeping bags, portable stoves & more. Free shipping over ₹2,499.</p>
+                <div class="carousel-inner">
+                    <?php if (!empty($heroAds)): ?>
+                        <?php foreach ($heroAds as $index => $ad): ?>
+                            <div class="carousel-item <?= $index === 0 ? 'active' : '' ?>" data-bs-interval="5000">
+                                
+                                <img src="<?= htmlspecialchars(formatAdImageUrl($ad['image_url'])) ?>" 
+                                     alt="<?= htmlspecialchars($ad['title']) ?>">
+                                
+                                <div class="hero-promo-overlay">
+                                    <div class="hero-content">
+                                        <h1 class="animate__animated animate__fadeInUp">
+                                            <?= htmlspecialchars($ad['title']) ?>
+                                        </h1>
+                                        <a href="<?= htmlspecialchars($ad['target_url']) ?>" class="hero-btn">
+                                            Explore Now <i class="bi bi-arrow-right ms-2"></i>
+                                        </a>
+                                    </div>
+                                </div>
 
-        <div class="d-flex gap-3 mt-4">
-          <a class="btn btn-primary px-4" href="#products">Shop Bestsellers</a>
-          <a class="btn btn-outline-secondary px-4" href="#features">Learn More</a>
+                            </div>
+                        <?php endforeach; ?>
+                    <?php else: ?>
+                        <div class="carousel-item active">
+                            <img src="https://via.placeholder.com/1600x600?text=Welcome+to+iHub" alt="Placeholder">
+                        </div>
+                    <?php endif; ?>
+                </div>
+
+                <button class="carousel-control-prev" type="button" data-bs-target="#heroAdCarousel" data-bs-slide="prev">
+                    <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                    <span class="visually-hidden">Previous</span>
+                </button>
+                <button class="carousel-control-next" type="button" data-bs-target="#heroAdCarousel" data-bs-slide="next">
+                    <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                    <span class="visually-hidden">Next</span>
+                </button>
+
+            </div>
         </div>
-      </div>
-
-      <div class="col-lg-6">
-         <img src="https://via.placeholder.com/600x400?text=Hero+Image" class="img-fluid rounded shadow-sm" alt="Hero">
-      </div>
-
     </div>
-  </div>
 </section>
 
 <section class="py-5 container-fluid bg-white">
   <div class="container">
-    <!-- <h2 class="fw-bold mb-4">Top Categories</h2> -->
     <div class="row g-4">
       <?php foreach ($categories as $cat): ?>
         <div class="col-6 col-md-3">
           <a href="<?= $BASE_URL ?>shop/?category=<?= $cat['category_id'] ?>" class="text-decoration-none text-dark">
-            <div class="p-3 rounded text-center">
-              <?php if (!empty($cat['image_url'])): ?>
-                <img src="<?= $BASE_URL ?>uploads/categories/<?= htmlspecialchars($cat['image_url']) ?>" alt="<?= htmlspecialchars($cat['name']) ?>" class="w-50 mb-2" style="object-fit: cover; border-radius: 50%;">
-              <?php else: ?>
-                <img src="https://via.placeholder.com/150" alt="<?= htmlspecialchars($cat['name']) ?>" class="w-50 mb-2">
-              <?php endif; ?>
+            <div class="category-item">
+              <div class="category-circle">
+                <?php if (!empty($cat['image_url'])): ?>
+                  <img src="<?= $BASE_URL ?>uploads/categories/<?= htmlspecialchars($cat['image_url']) ?>" alt="<?= htmlspecialchars($cat['name']) ?>">
+                <?php else: ?>
+                  <img src="https://via.placeholder.com/150" alt="<?= htmlspecialchars($cat['name']) ?>">
+                <?php endif; ?>
+              </div>
               <h6 class="fw-bold"><?= htmlspecialchars($cat['name']) ?></h6>
             </div>
           </a>
         </div>
       <?php endforeach; ?>
+    </div>
+  </div>
+</section>
+
+<section class="py-5 bg-white">
+  <div class="container">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+      <h2 class="fw-bold mb-0">Browse Categories</h2>
+      <div class="d-flex gap-2">
+         <a href="<?= $BASE_URL ?>shop/" class="btn btn-sm btn-outline-secondary rounded-pill">View All</a>
+      </div>
+    </div>
+
+    <div class="category-slider-wrapper">
+      <div class="category-scroll-container" id="categoryScroll">
+        <?php foreach ($categories as $cat): ?>
+          <a href="<?= $BASE_URL ?>shop/?category=<?= $cat['category_id'] ?>" class="category-card-link">
+            <div class="category-circle-md">
+              <?php if (!empty($cat['image_url'])): ?>
+                <img src="<?= $BASE_URL ?>uploads/categories/<?= htmlspecialchars($cat['image_url']) ?>" 
+                     alt="<?= htmlspecialchars($cat['name']) ?>" loading="lazy">
+              <?php else: ?>
+                <img src="https://via.placeholder.com/150" alt="<?= htmlspecialchars($cat['name']) ?>">
+              <?php endif; ?>
+            </div>
+            <span class="category-name-label"><?= htmlspecialchars($cat['name']) ?></span>
+          </a>
+        <?php endforeach; ?>
+      </div>
     </div>
   </div>
 </section>
@@ -484,6 +737,81 @@ function getFinalPrice($price, $discount) {
     </div>
   </div>
 </section>
+
+<?php if (!empty($featuredProducts)): ?>
+<section class="py-5 container-fluid ">
+  <div class="container">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="fw-bold mb-0">Featured Selections</h2>
+        <a href="<?= $BASE_URL ?>shop/" class="text-primary text-decoration-none fw-semibold">View All <i class="bi bi-arrow-right"></i></a>
+    </div>
+    <div class="row g-4">
+      <?php foreach ($featuredProducts as $product): ?>
+        <?php
+          $finalPrice = getFinalPrice($product['price'], $product['discount'] ?? 0);
+          $isWishlisted = !empty($wishlistProductMap[$product['product_id']]);
+          $wishlistIconClasses = $isWishlisted ? 'bi bi-heart-fill' : 'bi bi-heart';
+          $wishlistActiveClass = $isWishlisted ? 'wishlist-active' : '';
+        ?>
+        <div class="col-6 col-md-3">
+          <div class="product-card p-3 h-100 ">
+            <?php if (($product['discount'] ?? 0) > 0): ?>
+              <span class="badge-sale">-<?= number_format($product['discount'], 0) ?>%</span>
+            <?php endif; ?>
+
+            <div class="image-wrapper">
+              <a href="<?= $BASE_URL ?>shop/product_details.php?id=<?= $product['product_id'] ?>">
+                <img src="<?= htmlspecialchars(getProductImage($product)) ?>" alt="<?= htmlspecialchars($product['name']) ?>">
+              </a>
+              
+              <div class="overlay-actions">
+                  <?php if ($customer_logged_in): ?>
+                    <button class="overlay-btn" title="Add to Cart"
+                            onclick="event.stopPropagation(); addToCart(
+                              <?= $product['product_id'] ?>,
+                              '<?= addslashes($product['name']) ?>',
+                              <?= $finalPrice ?>,
+                              '<?= htmlspecialchars(getProductImage($product)) ?>'
+                            )">
+                        <i class="bi bi-cart-plus"></i>
+                    </button>
+                    <button class="overlay-btn wishlist-heart <?= $wishlistActiveClass ?>" 
+                            title="Add to Wishlist"
+                            data-id="<?= $product['product_id'] ?>"
+                            onclick="event.stopPropagation(); toggleWishlist(this)">
+                        <i class="<?= $wishlistIconClasses ?>"></i>
+                    </button>
+                  <?php else: ?>
+                    <button class="overlay-btn" title="Add to Cart" data-bs-toggle="modal" data-bs-target="#loginModal" onclick="event.stopPropagation();">
+                        <i class="bi bi-cart-plus"></i>
+                    </button>
+                    <button class="overlay-btn text-danger" title="Add to Wishlist" data-bs-toggle="modal" data-bs-target="#loginModal" onclick="event.stopPropagation();">
+                        <i class="bi bi-heart"></i>
+                    </button>
+                  <?php endif; ?>
+              </div>
+            </div>
+
+            <span class="category-label"><?= htmlspecialchars($product['category_name'] ?? 'Electronics') ?></span>
+            <h3 class="product-title">
+              <a href="<?= $BASE_URL ?>shop/product_details.php?id=<?= $product['product_id'] ?>" class="text-decoration-none text-reset">
+                <?= htmlspecialchars($product['name']) ?>
+              </a>
+            </h3>
+
+            <div class="price-wrapper mb-3">
+              <span class="current-price">₹<?= number_format($finalPrice, 2) ?></span>
+              <?php if (($product['discount'] ?? 0) > 0): ?>
+                <span class="old-price">₹<?= number_format($product['price'], 2) ?></span>
+              <?php endif; ?>
+            </div>
+          </div>
+        </div>
+      <?php endforeach; ?>
+    </div>
+  </div>
+</section>
+<?php endif; ?>
 
 <?php if (!empty($heroAds)): ?>
 <section class="hero-ad-section container-fluid">
@@ -643,7 +971,6 @@ document.getElementById('loginForm')?.addEventListener('submit', async function(
     const data = await response.json();
     
     if (data.success) {
-      // Reload page to show logged in state
       window.location.reload();
     } else {
       errorDiv.textContent = data.error || 'Login failed';
@@ -655,10 +982,8 @@ document.getElementById('loginForm')?.addEventListener('submit', async function(
   }
 });
 
-// Ensure logout links work - handle Bootstrap dropdown navigation
 document.querySelectorAll('a[href*="customer_logout"]').forEach(function(logoutLink) {
   logoutLink.addEventListener('click', function(e) {
-    // If it's a dropdown item, Bootstrap might prevent navigation
     if (this.classList.contains('dropdown-item')) {
       e.preventDefault();
       e.stopPropagation();
@@ -683,6 +1008,19 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 });
 <?php endif; ?>
+
+
+
+// Function to scroll the category row
+function scrollCategories(direction) {
+  const container = document.getElementById('categoryScroll');
+  const scrollAmount = 300;
+  if (direction === 'left') {
+    container.scrollBy({ left: -scrollAmount, behavior: 'smooth' });
+  } else {
+    container.scrollBy({ left: scrollAmount, behavior: 'smooth' });
+  }
+}
 </script>
 </body>
 </html>
