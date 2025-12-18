@@ -197,19 +197,6 @@ require_once __DIR__ . '/../auth/customer_auth.php';
         </div>
     </section>
 
-    <section class="content-section mb-5">
-        <div class="row g-3">
-            <div class="col-md-6">
-                <img src="https://images.unsplash.com/photo-1498049381960-a0d918c75dd9?q=80&w=2070&auto=format&fit=crop" 
-                     class="w-100 h-100 object-fit-cover" style="min-height:300px;" alt="Lifestyle 1">
-            </div>
-            <div class="col-md-6">
-                <img src="https://images.unsplash.com/photo-1526738549149-8e07eca6c147?q=80&w=2125&auto=format&fit=crop" 
-                     class="w-100 h-100 object-fit-cover" style="min-height:300px;" alt="Lifestyle 2">
-            </div>
-        </div>
-    </section>
-
 </div>
 
 <?php include __DIR__ . "/../components/newsletter.php"; ?>

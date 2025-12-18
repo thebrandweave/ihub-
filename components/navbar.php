@@ -224,6 +224,46 @@ $LOGO_URL = $SITE_URL . "assets/image/logo/ihub.png";
   background-color: #22c55e;
 }
 
+.top-info-bar {
+  width: 100%;
+  padding: 8px 0;
+}
+
+.ticker-wrapper {
+  display: flex;
+  width: max-content; /* Critical: allows children to sit side-by-side without limit */
+}
+
+.ticker-track {
+  display: flex;
+  flex-shrink: 0;
+  /* Adjust 25s for speed (Higher = Slower) */
+  animation: infinite-train 25s linear infinite;
+}
+
+.ticker-track span {
+  padding: 0 40px; /* Adjust spacing between messages */
+  color: #ffffff;
+  font-size: 14px;
+  font-weight: 500;
+  letter-spacing: 0.5px;
+}
+
+@keyframes infinite-train {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    /* Moves the entire first track out, bringing the second track into its exact start spot */
+    transform: translateX(-100%);
+  }
+}
+
+/* Pause on hover so customers can read or click specific info */
+.top-info-bar:hover .ticker-track {
+  animation-play-state: paused;
+}
+
 /* Notifications drawer */
 .notification-item-unread {
   background-color: #fff5f5;
@@ -326,11 +366,30 @@ $LOGO_URL = $SITE_URL . "assets/image/logo/ihub.png";
 <!-- ================= DESKTOP NAVBAR ================= -->
 <nav class="container-fluid p-0 desktop-nav">
 
-  <div class="w-100 py-1 text-white top-info-bar" style="background:var(--brand-primary-dark);font-size:14px;">
-    <div class="container d-flex justify-content-between">
+<div class="top-info-bar" style="background:var(--brand-primary-dark); overflow:hidden; white-space:nowrap; py-2">
+  <div class="ticker-wrapper">
+    <div class="ticker-track">
       <span>Free shipping for orders over ₹2499</span>
+      <span>•</span>
+      <span>100% Genuine Electronics</span>
+      <span>•</span>
+      <span>Fast Delivery Pan India</span>
+      <span>•</span>
+      <span>Exclusive Festive Discounts</span>
+      <span>•</span>
+    </div>
+    <div class="ticker-track">
+      <span>Free shipping for orders over ₹2499</span>
+      <span>•</span>
+      <span>100% Genuine Electronics</span>
+      <span>•</span>
+      <span>Fast Delivery Pan India</span>
+      <span>•</span>
+      <span>Exclusive Festive Discounts</span>
+      <span>•</span>
     </div>
   </div>
+</div>
 
   <div class="w-100 py-3" style="background:rgba(0, 0, 0, 0.95);">
     <div class="container d-flex justify-content-between align-items-center gap-3">

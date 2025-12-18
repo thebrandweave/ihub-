@@ -424,14 +424,6 @@ function getFinalPrice($price, $discount) {
                     <img src="<?= htmlspecialchars(formatAdImageUrl($ad['image_url'])) ?>" 
                          alt="<?= htmlspecialchars($ad['title']) ?>">
                     
-                    <div class="promo-overlay">
-                        <div class="promo-content">
-                            <h3><?= htmlspecialchars($ad['title']) ?></h3>
-                            <div class="promo-btn">
-                                Explore Now <i class="bi bi-arrow-right ms-2"></i>
-                            </div>
-                        </div>
-                    </div>
                 </a>
             <?php endforeach; ?>
         </div>
