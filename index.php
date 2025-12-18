@@ -71,6 +71,17 @@ try {
 } catch (PDOException $e) { $popularProducts = []; }
 
 
+// --- Fetch Trending Brands ---
+$trendingBrands = [];
+try {
+    // Fetching brands (adjust LIMIT as needed)
+    $brandStmt = $pdo->query("SELECT * FROM brands ORDER BY name ASC LIMIT 10");
+    $trendingBrands = $brandStmt->fetchAll(PDO::FETCH_ASSOC);
+} catch (PDOException $e) {
+    $trendingBrands = [];
+}
+
+
 function getActiveAdvertisements($type, $limit = 1) {
     global $pdo;
     try {
@@ -461,6 +472,75 @@ function getFinalPrice($price, $discount) {
       width: 100%;
       border-radius: 12px;
     }
+
+/* --- Brand Section Enhancements --- */
+.brand-wrapper {
+    display: flex;
+    justify-content: flex-start;
+    align-items: flex-start;
+    gap: 40px; /* Increased gap between items */
+    flex-wrap: wrap; /* Allows wrapping if there are many brands */
+    margin-top: 2em; /* Proper margin after the "Trending Brands" title */
+}
+
+.brand-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-decoration: none;
+    color: #334155;
+    font-weight: 600; /* Slightly bolder text */
+    font-size: 14px;
+    transition: all 0.3s ease;
+    width: 120px; /* Increased width to accommodate larger image */
+    text-align: center;
+}
+
+.brand-img-box {
+    width: 120px;  /* Increased from 70px */
+    height: 120px; /* Increased from 70px */
+    margin-bottom: 12px;
+    border-radius: 50%;
+    overflow: hidden;
+    background: #fff; /* White background often looks better for brand logos */
+    border: 1px solid #e2e8f0; /* Soft border */
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+}
+
+.brand-img-box img {
+    width: 100%; /* Padding inside the circle so logos don't touch edges */
+    height: 100%;
+    object-fit: cover; /* Contain is better for logos to prevent cropping names */
+}
+
+/* Hover Effects matching your categories */
+.brand-item:hover .brand-img-box {
+    border-color: var(--brand-primary);
+    transform: translateY(-5px);
+    box-shadow: 0 8px 15px rgba(13, 110, 253, 0.1);
+}
+
+.brand-item:hover span {
+    color: var(--brand-primary);
+}
+
+@media (max-width: 768px) {
+    .brand-wrapper { 
+        gap: 25px; 
+        overflow-x: auto; 
+        flex-wrap: nowrap; /* Keep scrollable on mobile */
+        padding-bottom: 10px;
+    }
+    .brand-img-box { width: 75px; height: 75px; }
+    .brand-item { width: 80px; }
+}
+
+
+
   </style>
 </head>
 <body>
@@ -813,6 +893,35 @@ function getFinalPrice($price, $discount) {
         </div>
       <?php endforeach; ?>
     </div>
+
+    </section>
+
+    <section id="brand" class="py-5 bg-white container-fluid">
+  <div class="container">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+      <h2 class="fw-bold">Trending Brands</h2>
+      <a href="<?= $BASE_URL ?>shop/" class="text-primary text-decoration-none fw-semibold">
+        View All <i class="bi bi-arrow-right"></i>
+      </a>
+    </div>
+
+    <div class="brand-wrapper">
+      <?php foreach ($trendingBrands as $brand): ?>
+        <a href="<?= $BASE_URL ?>shop/?brand=<?= $brand['brand_id'] ?>" class="brand-item">
+          <div class="brand-img-box">
+            <?php if (!empty($brand['logo'])): ?>
+              <img src="<?= $BASE_URL ?>uploads/brands/<?= htmlspecialchars($brand['logo']) ?>" 
+                   alt="<?= htmlspecialchars($brand['name']) ?>">
+            <?php else: ?>
+              <div class="text-primary fw-bold"><?= substr(htmlspecialchars($brand['name']), 0, 1) ?></div>
+            <?php endif; ?>
+          </div>
+          <span><?= htmlspecialchars($brand['name']) ?></span>
+        </a>
+      <?php endforeach; ?>
+    </div>
+  </div>
+</section>
 
 
 <?php include __DIR__ . "/components/newsletter.php"; ?>
