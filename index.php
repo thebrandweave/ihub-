@@ -2,10 +2,10 @@
 // Connect to database and check customer authentication
 require_once __DIR__ . '/auth/customer_auth.php';
 
-// Fetch categories
+// Fetch all categories (Removed LIMIT 4)
 $categories = [];
 try {
-    $catStmt = $pdo->query("SELECT * FROM categories ORDER BY name ASC LIMIT 4");
+    $catStmt = $pdo->query("SELECT * FROM categories ORDER BY name ASC");
     $categories = $catStmt->fetchAll(PDO::FETCH_ASSOC);
 } catch (PDOException $e) {
     $categories = [];
@@ -13,7 +13,7 @@ try {
 
 
 // Fetch featured products (from featured_products table)
-$featuredProducts = [];
+$featuredProducts = []; 
 try {
     $featStmt = $pdo->query("
         SELECT p.*, c.name as category_name,
@@ -177,7 +177,7 @@ function getFinalPrice($price, $discount) {
 }
 
 .hero-boxed-container .carousel-item {
-    height: 500px;
+    height: 280px;
     background-color: #f5f7fb;
 }
 
@@ -185,156 +185,100 @@ function getFinalPrice($price, $discount) {
     width: 100%;
     height: 100%;
     object-fit: cover;
+    object-position: center;
+    transition: transform 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
 }
 
-/* Matching the Promo Overlay style */
-.hero-promo-overlay {
-    position: absolute;
-    inset: 0;
-    background: linear-gradient(to right, rgba(0,0,0,0.75) 0%, rgba(0,0,0,0.2) 60%, transparent 100%);
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    padding: 0 10%; /* Matches desktop spacing */
-    z-index: 2;
+.hero-boxed-container img:hover {
+    transform: scale(1.03);
 }
 
-.hero-content h1 {
-    color: #fff;
-    font-weight: 700;
-    font-size: 3.5rem;
-    margin-bottom: 1.5rem;
-    text-shadow: 0 2px 4px rgba(0,0,0,0.3);
-    max-width: 600px;
-}
-
-/* Matching your .promo-btn style */
-.hero-btn {
-    display: inline-flex;
-    align-items: center;
-    background: #fff;
-    color: #0f172a;
-    padding: 12px 32px;
-    border-radius: 50px;
-    font-weight: 600;
-    text-decoration: none;
-    width: fit-content;
-    transition: all 0.3s ease;
-}
-
-.hero-btn:hover {
-    background: var(--brand-primary);
-    color: white;
-    transform: translateY(-2px);
-}
 
 /* Responsive Scaling */
 @media (max-width: 991px) {
-    .hero-content h1 { font-size: 2.5rem; }
     .hero-boxed-container .carousel-item { height: 400px; }
 }
 
 @media (max-width: 768px) {
-    .hero-promo-overlay {
-        padding: 2rem;
-        background: linear-gradient(to top, rgba(0,0,0,0.8) 0%, rgba(0,0,0,0.3) 100%);
-        justify-content: flex-end;
-        text-align: center;
-    }
-    .hero-content {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-    }
-    .hero-content h1 { font-size: 1.8rem; }
     .hero-boxed-container .carousel-item { height: 350px; }
 }
 
-
-
-/* --- Category Carousel Styles --- */
-.category-slider-wrapper {
-    position: relative;
-    padding: 20px 0;
-}
-
-.category-scroll-container {
-    display: flex;
-    overflow-x: auto;
-    gap: 20px;
-    padding-bottom: 15px;
-    scrollbar-width: none; /* Firefox */
-    -ms-overflow-style: none;  /* IE/Edge */
-}
-
-.category-scroll-container::-webkit-scrollbar {
-    display: none; /* Chrome/Safari/Webview */
-}
-
-.category-card-link {
-    flex: 0 0 auto;
-    width: 140px; /* Width of each category item */
-    text-align: center;
-    text-decoration: none;
-    transition: transform 0.3s ease;
-}
-
-.category-card-link:hover {
-    transform: translateY(-5px);
-}
-
-.category-circle-md {
-    width: 100px;
-    height: 100px;
-    border-radius: 50%;
+/* --- Circular Category Bar --- */
+.category-nav-container {
     background: #fff;
-    margin: 0 auto 10px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+    padding: 20px 0;
+    margin-bottom: 0;
+}
+
+.category-wrapper {
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    gap: 30px;
+    flex-wrap: nowrap;
+}
+
+.cat-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-decoration: none;
+    color: #334155;
+    font-weight: 500;
+    font-size: 13px;
+    transition: all 0.3s ease;
+    width: 80px; /* Fixed width for better alignment */
+    text-align: center;
+}
+
+.cat-img-box {
+    width: 70px;
+    height: 70px;
+    margin-bottom: 8px;
+    border-radius: 50%; /* This makes it a circle */
+    overflow: hidden;
+    background: #f1f5f9;
+    border: 2px solid transparent;
+    transition: all 0.3s ease;
     display: flex;
     align-items: center;
     justify-content: center;
-    border: 1px solid #e2e8f0;
-    overflow: hidden;
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
 }
 
-.category-circle-md img {
+.cat-img-box img {
     width: 100%;
     height: 100%;
-    object-fit: cover;
+    object-fit: cover; /* Ensures image fills the circle without distortion */
 }
 
-.category-name-label {
-    font-size: 0.9rem;
-    font-weight: 600;
-    color: #1e293b;
-    display: block;
+/* Hover Effects */
+.cat-item:hover .cat-img-box {
+    border-color: var(--brand-primary);
+    transform: translateY(-3px);
+    box-shadow: 0 4px 12px rgba(13, 110, 253, 0.15);
 }
 
-    /* --- Category Circle Styles --- */
-    .category-item {
-      text-align: center;
-      transition: transform 0.3s ease;
+.cat-item:hover span {
+    color: var(--brand-primary);
+}
+
+@media (max-width: 768px) {
+    .category-wrapper { 
+        gap: 20px; 
+        overflow-x: auto; 
+        justify-content: flex-start; 
+        padding: 0 15px;
+        -webkit-overflow-scrolling: touch;
     }
-    .category-item:hover {
-      transform: translateY(-5px);
-    }
-    .category-circle {
-      width: 120px;
-      height: 120px;
-      border-radius: 50%;
-      overflow: hidden;
-      margin: 0 auto 15px;
-      background: #f8f9fa;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      border: 1px solid #eee;
-    }
-    .category-circle img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-    }
+    .category-wrapper::-webkit-scrollbar { display: none; } /* Hide scrollbar for mobile */
+    .cat-img-box { width: 60px; height: 60px; }
+    .cat-item { width: 70px; font-size: 12px; }
+}
+
+
+
+
 
     /* --- Product Card Styles --- */
     .product-card {
@@ -504,47 +448,6 @@ function getFinalPrice($price, $discount) {
         transform: scale(1.03);
     }
 
-    .promo-overlay {
-        position: absolute;
-        bottom: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background: linear-gradient(to right, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0.1) 70%, transparent 100%);
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        padding: 2.5rem;
-        z-index: 2;
-    }
-
-    .promo-content h3 {
-        color: #fff;
-        font-weight: 700;
-        font-size: 1.75rem;
-        margin-bottom: 0.5rem;
-        text-shadow: 0 2px 4px rgba(0,0,0,0.3);
-        max-width: 80%;
-    }
-
-    .promo-btn {
-        display: inline-flex;
-        align-items: center;
-        background: #fff;
-        color: #0f172a;
-        padding: 8px 24px;
-        border-radius: 50px;
-        font-weight: 600;
-        font-size: 0.9rem;
-        margin-top: 15px;
-        width: fit-content;
-        transition: background 0.2s, color 0.2s;
-    }
-
-    .promo-banner:hover .promo-btn {
-        background: var(--brand-primary);
-        color: white;
-    }
 
     /* Popup Ad */
     .ad-popup-img {
@@ -556,6 +459,48 @@ function getFinalPrice($price, $discount) {
 <body>
 
 <?php include __DIR__ . "/components/navbar.php"; ?>
+
+<section class="category-nav-container bg-light">
+  <div class="container">
+    <div class="category-wrapper">
+      <?php 
+      $visibleLimit = 8; // Showing 8 items for a better spread
+      $visibleCats = array_slice($categories, 0, $visibleLimit);
+      $moreCats = array_slice($categories, $visibleLimit);
+      ?>
+
+      <?php foreach ($visibleCats as $cat): ?>
+        <a href="<?= $BASE_URL ?>shop/?category=<?= $cat['category_id'] ?>" class="cat-item">
+          <div class="cat-img-box">
+            <?php if (!empty($cat['image_url'])): ?>
+              <img src="<?= $BASE_URL ?>uploads/categories/<?= htmlspecialchars($cat['image_url']) ?>" alt="<?= htmlspecialchars($cat['name']) ?>">
+            <?php else: ?>
+              <img src="https://via.placeholder.com/100" alt="No Image">
+            <?php endif; ?>
+          </div>
+          <span><?= htmlspecialchars($cat['name']) ?></span>
+        </a>
+      <?php endforeach; ?>
+
+      <?php if (!empty($moreCats)): ?>
+        <div class="cat-item cat-more-dropdown">
+          <div class="cat-img-box">
+             <i class="bi bi-grid-3x3-gap" style="font-size: 24px; color: #64748b;"></i>
+          </div>
+          <span>More <i class="bi bi-chevron-down ms-1" style="font-size: 10px;"></i></span>
+          
+          <div class="cat-more-menu">
+            <?php foreach ($moreCats as $cat): ?>
+              <a href="<?= $BASE_URL ?>shop/?category=<?= $cat['category_id'] ?>">
+                <?= htmlspecialchars($cat['name']) ?>
+              </a>
+            <?php endforeach; ?>
+          </div>
+        </div>
+      <?php endif; ?>
+    </div>
+  </div>
+</section>
 
 <section class="hero-carousel-wrapper">
     <div class="container">
@@ -573,20 +518,11 @@ function getFinalPrice($price, $discount) {
                     <?php if (!empty($heroAds)): ?>
                         <?php foreach ($heroAds as $index => $ad): ?>
                             <div class="carousel-item <?= $index === 0 ? 'active' : '' ?>" data-bs-interval="5000">
-                                
+                              <a href="<?= htmlspecialchars($ad['target_url']) ?>">
                                 <img src="<?= htmlspecialchars(formatAdImageUrl($ad['image_url'])) ?>" 
                                      alt="<?= htmlspecialchars($ad['title']) ?>">
-                                
-                                <div class="hero-promo-overlay">
-                                    <div class="hero-content">
-                                        <h1 class="animate__animated animate__fadeInUp">
-                                            <?= htmlspecialchars($ad['title']) ?>
-                                        </h1>
-                                        <a href="<?= htmlspecialchars($ad['target_url']) ?>" class="hero-btn">
-                                            Explore Now <i class="bi bi-arrow-right ms-2"></i>
-                                        </a>
-                                    </div>
-                                </div>
+
+                        </a>
 
                             </div>
                         <?php endforeach; ?>
@@ -611,57 +547,8 @@ function getFinalPrice($price, $discount) {
     </div>
 </section>
 
-<section class="py-5 container-fluid bg-white">
-  <div class="container">
-    <div class="row g-4">
-      <?php foreach ($categories as $cat): ?>
-        <div class="col-6 col-md-3">
-          <a href="<?= $BASE_URL ?>shop/?category=<?= $cat['category_id'] ?>" class="text-decoration-none text-dark">
-            <div class="category-item">
-              <div class="category-circle">
-                <?php if (!empty($cat['image_url'])): ?>
-                  <img src="<?= $BASE_URL ?>uploads/categories/<?= htmlspecialchars($cat['image_url']) ?>" alt="<?= htmlspecialchars($cat['name']) ?>">
-                <?php else: ?>
-                  <img src="https://via.placeholder.com/150" alt="<?= htmlspecialchars($cat['name']) ?>">
-                <?php endif; ?>
-              </div>
-              <h6 class="fw-bold"><?= htmlspecialchars($cat['name']) ?></h6>
-            </div>
-          </a>
-        </div>
-      <?php endforeach; ?>
-    </div>
-  </div>
-</section>
 
-<section class="py-5 bg-white">
-  <div class="container">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-      <h2 class="fw-bold mb-0">Browse Categories</h2>
-      <div class="d-flex gap-2">
-         <a href="<?= $BASE_URL ?>shop/" class="btn btn-sm btn-outline-secondary rounded-pill">View All</a>
-      </div>
-    </div>
 
-    <div class="category-slider-wrapper">
-      <div class="category-scroll-container" id="categoryScroll">
-        <?php foreach ($categories as $cat): ?>
-          <a href="<?= $BASE_URL ?>shop/?category=<?= $cat['category_id'] ?>" class="category-card-link">
-            <div class="category-circle-md">
-              <?php if (!empty($cat['image_url'])): ?>
-                <img src="<?= $BASE_URL ?>uploads/categories/<?= htmlspecialchars($cat['image_url']) ?>" 
-                     alt="<?= htmlspecialchars($cat['name']) ?>" loading="lazy">
-              <?php else: ?>
-                <img src="https://via.placeholder.com/150" alt="<?= htmlspecialchars($cat['name']) ?>">
-              <?php endif; ?>
-            </div>
-            <span class="category-name-label"><?= htmlspecialchars($cat['name']) ?></span>
-          </a>
-        <?php endforeach; ?>
-      </div>
-    </div>
-  </div>
-</section>
 
 
 <section class="py-5 container-fluid bg-light">
@@ -823,15 +710,6 @@ function getFinalPrice($price, $discount) {
             <img src="<?= htmlspecialchars(formatAdImageUrl($ad['image_url'])) ?>" 
                  alt="<?= htmlspecialchars($ad['title']) ?>" 
                  loading="lazy">
-            
-            <div class="promo-overlay">
-                <div class="promo-content">
-                    <h3><?= htmlspecialchars($ad['title']) ?></h3>
-                    <div class="promo-btn">
-                        Explore Now <i class="bi bi-arrow-right ms-2"></i>
-                    </div>
-                </div>
-            </div>
           </a>
         </div>
       <?php endforeach; ?>
@@ -920,16 +798,6 @@ function getFinalPrice($price, $discount) {
       <?php endforeach; ?>
     </div>
 
-<section id="features" class="py-5 bg-light container-fluid mt-5">
-  <div class="container">
-    <h2 class="fw-bold mb-4">Why campers choose Aceno</h2>
-    <div class="row g-3">
-      <div class="col-md-4"><div class="p-4 bg-white shadow-sm rounded">Durable materials — lab tested</div></div>
-      <div class="col-md-4"><div class="p-4 bg-white shadow-sm rounded">Sustainable packaging</div></div>
-      <div class="col-md-4"><div class="p-4 bg-white shadow-sm rounded">Fast support & warranty</div></div>
-    </div>
-  </div>
-</section>
 
 <?php include __DIR__ . "/components/newsletter.php"; ?>
 

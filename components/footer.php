@@ -87,7 +87,9 @@ require_once __DIR__ . '/../config/config.php';
       </p>
 
       <div class="d-flex gap-3 align-items-center">
-        <img src="" height="26">
+        <p class="mb-0 text-secondary">
+          Developed by <a href="https://thebrandweave.com" class="text-decoration-none text-secondary"><img src="<?= $BASE_URL ?>assets/image/logo/brand.png" height="26"></a>
+        </p>
       </div>
     </div>
 
