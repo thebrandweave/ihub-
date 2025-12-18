@@ -12,57 +12,64 @@ try {
 }
 
 
-// Fetch featured products (from featured_products table)
-$featuredProducts = []; 
-try {
-    $featStmt = $pdo->query("
-        SELECT p.*, c.name as category_name,
-               (SELECT image_url FROM product_images WHERE product_id = p.product_id AND is_primary = 1 LIMIT 1) as primary_image
-        FROM featured_products fp
-        JOIN products p ON fp.product_id = p.product_id
-        LEFT JOIN categories c ON p.category_id = c.category_id
-        WHERE p.status = 'active'
-        ORDER BY fp.added_at DESC
-        LIMIT 4
-    ");
-    $featuredProducts = $featStmt->fetchAll(PDO::FETCH_ASSOC);
-} catch (PDOException $e) {
-    $featuredProducts = [];
-}
-
-// Fetch trending products (active products with stock)
+// --- Updated Trending Products Query ---
 $trendingProducts = [];
 try {
     $trendStmt = $pdo->query("
         SELECT p.*, c.name as category_name,
-                (SELECT image_url FROM product_images WHERE product_id = p.product_id AND is_primary = 1 LIMIT 1) as primary_image
+               (SELECT image_url FROM product_images WHERE product_id = p.product_id AND is_primary = 1 LIMIT 1) as primary_image,
+               IFNULL(AVG(r.rating), 0) as avg_rating,
+               COUNT(r.review_id) as total_reviews
         FROM products p
         LEFT JOIN categories c ON p.category_id = c.category_id
+        LEFT JOIN reviews r ON p.product_id = r.product_id AND r.status = 'approved'
         WHERE p.status = 'active' AND p.stock > 0
+        GROUP BY p.product_id
         ORDER BY p.created_at DESC
         LIMIT 4
     ");
     $trendingProducts = $trendStmt->fetchAll(PDO::FETCH_ASSOC);
-} catch (PDOException $e) {
-    $trendingProducts = [];
-}
+} catch (PDOException $e) { $trendingProducts = []; }
 
-// Fetch popular products (active products)
+// --- Updated Featured Products Query ---
+$featuredProducts = []; 
+try {
+    $featStmt = $pdo->query("
+        SELECT p.*, c.name as category_name,
+               (SELECT image_url FROM product_images WHERE product_id = p.product_id AND is_primary = 1 LIMIT 1) as primary_image,
+               IFNULL(AVG(r.rating), 0) as avg_rating,
+               COUNT(r.review_id) as total_reviews
+        FROM featured_products fp
+        JOIN products p ON fp.product_id = p.product_id
+        LEFT JOIN categories c ON p.category_id = c.category_id
+        LEFT JOIN reviews r ON p.product_id = r.product_id AND r.status = 'approved'
+        WHERE p.status = 'active'
+        GROUP BY p.product_id
+        ORDER BY fp.added_at DESC
+        LIMIT 4
+    ");
+    $featuredProducts = $featStmt->fetchAll(PDO::FETCH_ASSOC);
+} catch (PDOException $e) { $featuredProducts = []; }
+
+// --- Updated Popular Products Query ---
 $popularProducts = [];
 try {
     $popStmt = $pdo->query("
         SELECT p.*, c.name as category_name,
-                (SELECT image_url FROM product_images WHERE product_id = p.product_id AND is_primary = 1 LIMIT 1) as primary_image
+               (SELECT image_url FROM product_images WHERE product_id = p.product_id AND is_primary = 1 LIMIT 1) as primary_image,
+               IFNULL(AVG(r.rating), 0) as avg_rating,
+               COUNT(r.review_id) as total_reviews
         FROM products p
         LEFT JOIN categories c ON p.category_id = c.category_id
+        LEFT JOIN reviews r ON p.product_id = r.product_id AND r.status = 'approved'
         WHERE p.status = 'active'
+        GROUP BY p.product_id
         ORDER BY p.created_at DESC
         LIMIT 6
     ");
     $popularProducts = $popStmt->fetchAll(PDO::FETCH_ASSOC);
-} catch (PDOException $e) {
-    $popularProducts = [];
-}
+} catch (PDOException $e) { $popularProducts = []; }
+
 
 function getActiveAdvertisements($type, $limit = 1) {
     global $pdo;
@@ -553,7 +560,10 @@ function getFinalPrice($price, $discount) {
 
 <section class="py-5 container-fluid bg-light">
   <div class="container">
-    <h2 class="fw-bold mb-4">Trending Electronics</h2>
+    <div class="d-flex justify-content-between align-items-center mb-4">
+      <h2 class="fw-bold mb-0">Trending Electronics</h2>
+      <a href="<?= $BASE_URL ?>shop/" class="text-primary text-decoration-none fw-semibold">View All <i class="bi bi-arrow-right"></i></a>
+    </div>
     <div class="row g-4">
       <?php foreach ($trendingProducts as $product): ?>
         <?php
@@ -563,8 +573,7 @@ function getFinalPrice($price, $discount) {
           $wishlistActiveClass = $isWishlisted ? 'wishlist-active' : '';
         ?>
         <div class="col-6 col-md-3">
-          <div class="product-card  p-3 h-100">
-            <?php if (($product['discount'] ?? 0) > 0): ?>
+          <div class="product-card p-3 h-100"> <?php if (($product['discount'] ?? 0) > 0): ?>
               <span class="badge-sale">-<?= number_format($product['discount'], 0) ?>%</span>
             <?php endif; ?>
 
@@ -576,20 +585,12 @@ function getFinalPrice($price, $discount) {
               <div class="overlay-actions">
                   <?php if ($customer_logged_in): ?>
                     <button class="overlay-btn" title="Add to Cart"
-                            onclick="event.stopPropagation(); addToCart(
-                              <?= $product['product_id'] ?>,
-                              '<?= addslashes($product['name']) ?>',
-                              <?= $finalPrice ?>,
-                              '<?= htmlspecialchars(getProductImage($product)) ?>'
-                            )">
+                            onclick="event.stopPropagation(); addToCart(<?= $product['product_id'] ?>,'<?= addslashes($product['name']) ?>',<?= $finalPrice ?>,'<?= htmlspecialchars(getProductImage($product)) ?>')">
                         <i class="bi bi-cart-plus"></i>
                     </button>
                     <button class="overlay-btn wishlist-heart <?= $wishlistActiveClass ?>" 
                             title="Add to Wishlist"
                             data-id="<?= $product['product_id'] ?>"
-                            data-name="<?= htmlspecialchars($product['name']) ?>"
-                            data-price="<?= $finalPrice ?>"
-                            data-image="<?= htmlspecialchars(getProductImage($product)) ?>"
                             onclick="event.stopPropagation(); toggleWishlist(this)">
                         <i class="<?= $wishlistIconClasses ?>"></i>
                     </button>
@@ -604,8 +605,16 @@ function getFinalPrice($price, $discount) {
               </div>
             </div>
 
-            <span class="category-label"><?= htmlspecialchars($product['category_name'] ?? 'Electronics') ?></span>
-            <h3 class="product-title">
+            <div class="d-flex justify-content-between align-items-center small mb-1">
+              <span class="category-label text-uppercase"><?= htmlspecialchars($product['category_name'] ?? 'Electronics') ?></span>
+              <span class="text-warning">
+                  <i class="bi bi-star-fill"></i> 
+                  <?= number_format($product['avg_rating'], 1) ?> 
+                  <span class="text-secondary">(<?= $product['total_reviews'] ?>)</span>
+              </span>
+            </div>
+
+            <h3 class="product-title mb-2">
               <a href="<?= $BASE_URL ?>shop/product_details.php?id=<?= $product['product_id'] ?>" class="text-decoration-none text-reset">
                 <?= htmlspecialchars($product['name']) ?>
               </a>
@@ -626,7 +635,7 @@ function getFinalPrice($price, $discount) {
 </section>
 
 <?php if (!empty($featuredProducts)): ?>
-<section class="py-5 container-fluid ">
+<section class="py-5 container-fluid">
   <div class="container">
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h2 class="fw-bold mb-0">Featured Selections</h2>
@@ -641,7 +650,7 @@ function getFinalPrice($price, $discount) {
           $wishlistActiveClass = $isWishlisted ? 'wishlist-active' : '';
         ?>
         <div class="col-6 col-md-3">
-          <div class="product-card p-3 h-100 ">
+          <div class="product-card bg-white p-3 h-100">
             <?php if (($product['discount'] ?? 0) > 0): ?>
               <span class="badge-sale">-<?= number_format($product['discount'], 0) ?>%</span>
             <?php endif; ?>
@@ -654,12 +663,7 @@ function getFinalPrice($price, $discount) {
               <div class="overlay-actions">
                   <?php if ($customer_logged_in): ?>
                     <button class="overlay-btn" title="Add to Cart"
-                            onclick="event.stopPropagation(); addToCart(
-                              <?= $product['product_id'] ?>,
-                              '<?= addslashes($product['name']) ?>',
-                              <?= $finalPrice ?>,
-                              '<?= htmlspecialchars(getProductImage($product)) ?>'
-                            )">
+                            onclick="event.stopPropagation(); addToCart(<?= $product['product_id'] ?>,'<?= addslashes($product['name']) ?>',<?= $finalPrice ?>,'<?= htmlspecialchars(getProductImage($product)) ?>')">
                         <i class="bi bi-cart-plus"></i>
                     </button>
                     <button class="overlay-btn wishlist-heart <?= $wishlistActiveClass ?>" 
@@ -679,8 +683,16 @@ function getFinalPrice($price, $discount) {
               </div>
             </div>
 
-            <span class="category-label"><?= htmlspecialchars($product['category_name'] ?? 'Electronics') ?></span>
-            <h3 class="product-title">
+            <div class="d-flex justify-content-between align-items-center small mb-1">
+              <span class="category-label text-uppercase"><?= htmlspecialchars($product['category_name'] ?? 'Electronics') ?></span>
+              <span class="text-warning">
+                  <i class="bi bi-star-fill"></i> 
+                  <?= number_format($product['avg_rating'], 1) ?> 
+                  <span class="text-secondary">(<?= $product['total_reviews'] ?>)</span>
+              </span>
+            </div>
+
+            <h3 class="product-title mb-2">
               <a href="<?= $BASE_URL ?>shop/product_details.php?id=<?= $product['product_id'] ?>" class="text-decoration-none text-reset">
                 <?= htmlspecialchars($product['name']) ?>
               </a>
@@ -722,7 +734,7 @@ function getFinalPrice($price, $discount) {
   <div class="container">
     <div class="d-flex justify-content-between mb-4">
       <h2 class="fw-bold">Popular Products</h2>
-      <span class="text-secondary">Showing <?= count($popularProducts) ?> results</span>
+      <a href="<?= $BASE_URL ?>shop/" class="text-primary text-decoration-none fw-semibold">View All <i class="bi bi-arrow-right"></i></a>
     </div>
 
     <div class="row g-4">
@@ -733,7 +745,7 @@ function getFinalPrice($price, $discount) {
           $wishlistIconClasses = $isWishlisted ? 'bi bi-heart-fill' : 'bi bi-heart';
           $wishlistActiveClass = $isWishlisted ? 'wishlist-active' : '';
         ?>
-        <div class="col-6 col-md-4">
+        <div class="col-6 col-md-3">
           <div class="product-card bg-white p-3 h-100">
             <?php if (($product['discount'] ?? 0) > 0): ?>
               <span class="badge-sale">-<?= number_format($product['discount'], 0) ?>%</span>
@@ -777,7 +789,11 @@ function getFinalPrice($price, $discount) {
 
             <div class="d-flex justify-content-between align-items-center small mb-1">
               <span class="category-label text-uppercase"><?= htmlspecialchars($product['category_name'] ?? 'Electronics') ?></span>
-              <span class="text-warning"><i class="bi bi-star-fill"></i> 0.00 (0)</span>
+              <span class="text-warning">
+                  <i class="bi bi-star-fill"></i> 
+                  <?= number_format($product['avg_rating'], 1) ?> 
+                  <span class="text-secondary">(<?= $product['total_reviews'] ?>)</span>
+              </span>
             </div>
 
             <h3 class="product-title mb-2">
