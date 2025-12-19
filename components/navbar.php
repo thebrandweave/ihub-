@@ -1,6 +1,14 @@
 <?php
 require_once dirname(__DIR__) . "/config/config.php";
 
+
+try {
+  // Crucial: Select image_url so we can actually show the icons
+  $navCatStmt = $pdo->query("SELECT category_id, name, image_url FROM categories ORDER BY name ASC LIMIT 10");
+  $navCategories = $navCatStmt->fetchAll(PDO::FETCH_ASSOC);
+} catch (PDOException $e) {
+  $navCategories = [];
+}
 /*
 |------------------------------------------------------------
 | BULLETPROOF SITE URL (FIXES ALL PATH ISSUES)
@@ -56,6 +64,114 @@ $LOGO_URL = $SITE_URL . "assets/image/logo/ihub.png";
   border-color: var(--brand-primary) !important;
 }
 
+
+/* Container to handle horizontal scrolling if categories exceed width */
+.nav-category-scroll {
+    scrollbar-width: none; /* Firefox */
+    -ms-overflow-style: none;  /* IE/Edge */
+}
+.nav-category-scroll::-webkit-scrollbar {
+    display: none; /* Chrome/Safari */
+}
+
+.nav-cat-circle-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-width: 65px; /* Ensures they don't squash */
+    transition: transform 0.2s ease;
+}
+
+.nav-cat-circle-item:hover {
+    transform: translateY(-2px);
+}
+
+.nav-cat-img-wrapper {
+    width: 45px; /* Smaller for Navbar */
+    height: 45px;
+    border-radius: 50%;
+    overflow: hidden;
+    background: #f1f5f9;
+    border: 1px solid #e2e8f0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 4px;
+}
+
+.nav-cat-img-wrapper img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.nav-cat-label {
+    font-size: 11px;
+    font-weight: 600;
+    color: #475569;
+    white-space: nowrap;
+    text-transform: capitalize;
+}
+
+.nav-cat-circle-item:hover .nav-cat-label {
+    color: var(--brand-primary);
+}
+
+
+@media (max-width: 768px) {
+    /* Make the bottom nav visible on mobile since we're using it for categories now */
+    .bottom-nav {
+        display: block !important;
+        border-bottom: 1px solid #eee;
+        overflow: hidden;
+    }
+
+    /* Force the flex container to stay in one line and scroll */
+    .nav-category-scroll {
+        display: flex !important;
+        flex-wrap: nowrap !important;
+        overflow-x: auto !important;
+        padding: 10px 15px !important;
+        gap: 20px !important; /* Spacing between circles */
+        -webkit-overflow-scrolling: touch; /* Smooth momentum scrolling for iOS */
+    }
+
+    /* Shrink the circles slightly for mobile so we can see more of them */
+    .nav-cat-img-wrapper {
+        width: 55px !important;
+        height: 55px !important;
+        margin-bottom: 6px;
+    }
+
+    .nav-cat-label {
+        font-size: 10px !important;
+        max-width: 65px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        display: block;
+    }
+
+    /* Hide the scrollbar because it's ugly and takes up space */
+    .nav-category-scroll::-webkit-scrollbar {
+        display: none;
+    }
+}
+
+
+@media (max-width: 768px) {
+    /* REMOVE the display: none and use this instead */
+    .desktop-nav .top-info-bar, 
+    .desktop-nav .w-100.py-3 { /* Hides the logo/search part of desktop nav */
+        display: none !important;
+    }
+
+    .bottom-nav {
+        display: block !important; /* Force show the category bar */
+        border-top: none !important;
+        background: #fff;
+    }
+}
+
 /* Desktop search bar styling */
 #desktopSearchForm .form-control:focus {
   border-color: var(--brand-primary);
@@ -103,7 +219,6 @@ $LOGO_URL = $SITE_URL . "assets/image/logo/ihub.png";
 
 @media (max-width: 768px) {
 .desktop-nav,
-.bottom-nav,
 .top-info-bar {
   display: none !important;
 }
@@ -264,6 +379,50 @@ $LOGO_URL = $SITE_URL . "assets/image/logo/ihub.png";
   animation-play-state: paused;
 }
 
+
+/* Typography & Interaction for Top Links */
+.top-link {
+  color: #ffffff;
+  text-decoration: none;
+  font-size: 13px;
+  font-weight: 500;
+  transition: opacity 0.2s ease;
+  white-space: nowrap;
+}
+
+.top-link:hover {
+  color: #ffcccc;
+  opacity: 0.9;
+}
+
+/* Fix Ticker Width for Responsiveness */
+.ticker-container {
+  mask-image: linear-gradient(to right, transparent, black 10%, black 90%, transparent);
+  -webkit-mask-image: linear-gradient(to right, transparent, black 10%, black 90%, transparent);
+}
+
+/* DESKTOP NAV RESPONSIVENESS */
+@media (min-width: 992px) and (max-width: 1200px) {
+  #desktopSearchForm {
+    max-width: 400px !important; /* Shrink search on small laptops */
+  }
+  .desktop-nav .gap-4 {
+    gap: 1.5rem !important; /* Tighten spacing */
+  }
+}
+
+/* Hiding mobile elements on desktop properly */
+@media (min-width: 769px) {
+  .mobile-header, .mobile-search {
+    display: none !important;
+  }
+}
+
+/* Ensure images don't stretch */
+.nav-logo {
+  max-width: 150px;
+}
+
 /* Notifications drawer */
 .notification-item-unread {
   background-color: #fff5f5;
@@ -275,6 +434,43 @@ $LOGO_URL = $SITE_URL . "assets/image/logo/ihub.png";
   font-size: 10px;
   text-transform: uppercase;
   letter-spacing: 0.03em;
+}
+
+
+
+/* Custom Dot Badge Style */
+/* Red Theme Notification Dot */
+.badge-dot {
+    width: 10px;
+    height: 10px;
+    background-color: var(--brand-primary) !important; /* Uses your #e3000e red */
+    border-radius: 50%;
+    border: 2px solid #fff; /* White border helps it stand out */
+    padding: 0 !important;
+    display: none; /* Hidden until JS detects count > 0 */
+    position: absolute;
+    top: -2px;
+    right: -2px;
+    z-index: 10;
+}
+
+/* Adjustments for mobile header icons to prevent overlapping */
+.mobile-header .position-relative .badge-dot {
+    top: 0px;
+    right: 0px;
+} 
+
+/* For mobile header dots */
+.mobile-header .badge-dot {
+    top: 2px !important;
+    right: -2px !important;
+}
+
+/* For desktop icons dots */
+.desktop-nav .badge-dot {
+    position: absolute;
+    top: 0;
+    right: 0;
 }
 </style>
 
@@ -292,7 +488,7 @@ $LOGO_URL = $SITE_URL . "assets/image/logo/ihub.png";
 
   <div class="position-relative">
     <i class="bi bi-bag mh-icon" data-bs-toggle="offcanvas" data-bs-target="#cartDrawer"></i>
-    <span class="badge bg-light text-dark position-absolute top-0 start-100 translate-middle p-1 cart-count">0</span>
+    <span class="badge-dot bg-light text-dark position-absolute top-0 start-100 translate-middle p-1 cart-count">0</span>
   </div>
 
 </div>
@@ -366,28 +562,36 @@ $LOGO_URL = $SITE_URL . "assets/image/logo/ihub.png";
 <!-- ================= DESKTOP NAVBAR ================= -->
 <nav class="container-fluid p-0 desktop-nav">
 
-<div class="top-info-bar" style="background:var(--brand-primary-dark); overflow:hidden; white-space:nowrap; py-2">
-  <div class="ticker-wrapper">
-    <div class="ticker-track">
-      <span>Free shipping for orders over ₹2499</span>
-      <span>•</span>
-      <span>100% Genuine Electronics</span>
-      <span>•</span>
-      <span>Fast Delivery Pan India</span>
-      <span>•</span>
-      <span>Exclusive Festive Discounts</span>
-      <span>•</span>
+<div class="top-info-bar d-none d-md-block" style="background:var(--brand-primary-dark); border-bottom: 1px solid rgba(255,255,255,0.1);">
+  <div class="container d-flex flex-column flex-lg-row justify-content-between align-items-center py-1">
+    
+    <div class="ticker-container" style="overflow:hidden; white-space:nowrap; max-width: 600px;">
+      <div class="ticker-wrapper">
+        <div class="ticker-track">
+          <span>Free shipping for orders over ₹2499</span>
+          <span>•</span>
+          <span>100% Genuine Electronics</span>
+          <span>•</span>
+          <span>Fast Delivery Pan India</span>
+          <span>•</span>
+        </div>
+        <div class="ticker-track">
+          <span>Free shipping for orders over ₹2499</span>
+          <span>•</span>
+          <span>100% Genuine Electronics</span>
+          <span>•</span>
+          <span>Fast Delivery Pan India</span>
+          <span>•</span>
+        </div>
+      </div>
     </div>
-    <div class="ticker-track">
-      <span>Free shipping for orders over ₹2499</span>
-      <span>•</span>
-      <span>100% Genuine Electronics</span>
-      <span>•</span>
-      <span>Fast Delivery Pan India</span>
-      <span>•</span>
-      <span>Exclusive Festive Discounts</span>
-      <span>•</span>
+
+    <div class="top-bar-links d-flex gap-3 mt-1 mt-lg-0">
+      <a href="<?= $SITE_URL ?>contact/" class="top-link"><i class="bi bi-telephone me-1"></i>Contact</a>
+      <span class="text-white-50 d-none d-lg-inline">|</span>
+      <a href="<?= $SITE_URL ?>account/orders.php" class="top-link"><i class="bi bi-truck me-1"></i>Track Order</a>
     </div>
+
   </div>
 </div>
 
@@ -435,11 +639,11 @@ $LOGO_URL = $SITE_URL . "assets/image/logo/ihub.png";
         <?php if (!empty($customer_logged_in)): ?>
           <div data-bs-toggle="offcanvas" data-bs-target="#notificationDrawer" class="position-relative">
             <i class="bi bi-bell fs-4"></i>
-            <span class="badge bg-light text-dark notification-count">0</span>
+            <span class="badge-dot bg-light text-dark notification-count"></span>
           </div>
           <div data-bs-toggle="offcanvas" data-bs-target="#wishlistDrawer">
             <i class="bi bi-heart fs-4"></i>
-            <span class="badge bg-light text-dark wishlist-count">0</span>
+            <span class="badge-dot bg-light text-dark wishlist-count"></span>
           </div>
         <?php else: ?>
           <div style="cursor:pointer" data-bs-toggle="modal" data-bs-target="#loginModal">
@@ -449,7 +653,7 @@ $LOGO_URL = $SITE_URL . "assets/image/logo/ihub.png";
 
         <div data-bs-toggle="offcanvas" data-bs-target="#cartDrawer">
           <i class="bi bi-bag fs-4"></i>
-          <span class="badge bg-light text-dark cart-count">0</span>
+          <span class="badge-dot bg-light text-dark cart-count"></span>
         </div>
 
       </div>
@@ -457,17 +661,34 @@ $LOGO_URL = $SITE_URL . "assets/image/logo/ihub.png";
   </div>
 
   <div class="bg-white border-top shadow-sm bottom-nav">
-    <div class="container d-flex align-items-center py-2 gap-4">
-
-      <ul class="nav">
-        <li class="nav-item"><a class="nav-link" href="<?= $SITE_URL ?>shop/">Shop</a></li>
-        <li class="nav-item"><a class="nav-link" href="<?= $SITE_URL ?>categories/">Categories</a></li>
-        <li class="nav-item"><a class="nav-link" href="<?= $SITE_URL ?>about/">About</a></li>
-        <li class="nav-item"><a class="nav-link" href="<?= $SITE_URL ?>contact/">Contact</a></li>
-      </ul>
-
+    <div class="container">
+        <div class="nav-category-scroll d-flex align-items-center py-2 gap-3 overflow-x-auto">
+            <?php foreach ($navCategories as $cat): ?>
+                <a href="<?= $SITE_URL ?>shop/?category=<?= $cat['category_id'] ?>" class="nav-cat-circle-item text-decoration-none text-center">
+                    <div class="nav-cat-img-wrapper">
+                        <?php if (!empty($cat['image_url'])): ?>
+                            <img src="<?= $BASE_URL ?>uploads/categories/<?= htmlspecialchars($cat['image_url']) ?>" 
+                                 alt="<?= htmlspecialchars($cat['name']) ?>"
+                                 loading="lazy">
+                        <?php else: ?>
+                            <div class="d-flex align-items-center justify-content-center h-100 w-100 bg-light">
+                                <i class="bi bi-tag text-muted"></i>
+                            </div>
+                        <?php endif; ?>
+                    </div>
+                    <span class="nav-cat-label"><?= htmlspecialchars($cat['name']) ?></span>
+                </a>
+            <?php endforeach; ?>
+            
+            <a href="<?= $SITE_URL ?>categories/" class="nav-cat-circle-item text-decoration-none text-center">
+                <div class="nav-cat-img-wrapper bg-light">
+                    <i class="bi bi-arrow-right"></i>
+                </div>
+                <span class="nav-cat-label">All</span>
+            </a>
+        </div>
     </div>
-  </div>
+</div>
 </nav>
 
 
@@ -504,7 +725,7 @@ $LOGO_URL = $SITE_URL . "assets/image/logo/ihub.png";
   <div class="offcanvas-header offcanvas-header-theme text-white">
     <h5 class="mb-0 fw-semibold d-flex align-items-center gap-2">
       Your cart
-      <span class="badge bg-light text-dark" id="cartDrawerItemCount">0</span>
+      <span class="badge-dot bg-light text-dark" id="cartDrawerItemCount"></span>
     </h5>
     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas" aria-label="Close"></button>
   </div>
@@ -519,7 +740,7 @@ $LOGO_URL = $SITE_URL . "assets/image/logo/ihub.png";
   <div class="offcanvas-header offcanvas-header-theme text-white">
     <h5 class="mb-0 fw-semibold d-flex align-items-center gap-2">
       Your wishlist
-      <span class="badge bg-light text-dark" id="wishlistDrawerItemCount">0</span>
+      <span class="badge-dot bg-light text-dark" id="wishlistDrawerItemCount"></span>
     </h5>
     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas" aria-label="Close"></button>
   </div>
@@ -535,7 +756,7 @@ $LOGO_URL = $SITE_URL . "assets/image/logo/ihub.png";
   <div class="offcanvas-header offcanvas-header-theme text-white">
     <h5 class="mb-0 fw-semibold d-flex align-items-center gap-2">
       Notifications
-      <span class="badge bg-light text-dark notification-count">0</span>
+      <span class="badge-dot bg-light text-dark notification-count"></span>
     </h5>
     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas" aria-label="Close"></button>
   </div>
@@ -572,7 +793,7 @@ function updateCartCount() {
   .then(res => res.json())
   .then(data => {
     document.querySelectorAll(".cart-count").forEach(el => {
-      el.textContent = data.count;
+      el.style.display = (data.count > 0) ? "block" : "none";
     });
   });
 }
@@ -617,24 +838,26 @@ function updateNotificationCount() {
     return res.json();
   })
   .then(data => {
-    if (data.success) {
+    // Determine the count (some APIs use data.count, others unread_count)
+    const count = data.count || data.unread_count || 0;
+    
     document.querySelectorAll(".notification-count").forEach(el => {
-        el.textContent = data.count || 0;
-      });
-    } else {
-      console.error("Notification count error:", data.error);
-      document.querySelectorAll(".notification-count").forEach(el => {
-        el.textContent = "0";
+      if (data.success && count > 0) {
+        // Show the dot if there are notifications
+        el.style.setProperty('display', 'block', 'important');
+      } else {
+        // Hide the dot if count is 0 or request failed
+        el.style.display = "none";
+      }
     });
-    }
   })
   .catch(error => {
     console.error("Failed to update notification count:", error);
     document.querySelectorAll(".notification-count").forEach(el => {
-      el.textContent = "0";
+      el.style.display = "none";
     });
   });
-}
+} 
 
 
 function loadNotificationDrawer() {
@@ -714,8 +937,8 @@ function loadNotificationDrawer() {
               <div class="flex-grow-1">
                 <div class="d-flex justify-content-between align-items-center mb-1">
                   <div class="d-flex align-items-center gap-2">
-                    ${isUnread ? `<span class="badge bg-danger" style="width:8px;height:8px;padding:0;border-radius:50%;"></span>` : ''}
-                  <span class="badge bg-light text-muted notification-type-pill">${typeLabel}</span>
+                    ${isUnread ? `<span class="badge-dot bg-danger" style="width:8px;height:8px;padding:0;border-radius:50%;"></span>` : ''}
+                  <span class="badge-dot bg-light text-muted notification-type-pill">${typeLabel}</span>
                   </div>
                   <span class="small text-muted">${createdText}</span>
                 </div>
@@ -1024,7 +1247,6 @@ document.addEventListener("DOMContentLoaded", function() {
 
 // COUNT
 function updateWishlistCount() {
-
   fetch("<?= $BASE_URL ?>wishlist/wishlist_action.php", {
     method: "POST",
     body: new URLSearchParams({ action: "count" })
@@ -1032,10 +1254,9 @@ function updateWishlistCount() {
   .then(res => res.json())
   .then(data => {
     document.querySelectorAll(".wishlist-count").forEach(el => {
-      el.textContent = data.count;
+      el.style.display = (data.count > 0) ? "block" : "none";
     });
   });
-
 }
 
 

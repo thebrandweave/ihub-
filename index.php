@@ -547,7 +547,7 @@ function getFinalPrice($price, $discount) {
 
 <?php include __DIR__ . "/components/navbar.php"; ?>
 
-<section class="category-nav-container bg-light">
+<!-- <section class="category-nav-container bg-light">
   <div class="container">
     <div class="category-wrapper">
       <?php 
@@ -587,7 +587,7 @@ function getFinalPrice($price, $discount) {
       <?php endif; ?>
     </div>
   </div>
-</section>
+</section> -->
 
 <section class="hero-carousel-wrapper">
     <div class="container">
@@ -638,7 +638,7 @@ function getFinalPrice($price, $discount) {
 
 
 
-<section class="py-5 container-fluid bg-light">
+<section class="py-5 container-fluid">
   <div class="container">
     <div class="d-flex justify-content-between align-items-center mb-4">
       <h2 class="fw-bold mb-0">Trending Electronics</h2>
