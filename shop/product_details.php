@@ -113,6 +113,36 @@ $final_price = $product['price'];
 if ($product['discount'] > 0) {
     $final_price = $product['price'] - ($product['price'] * $product['discount'] / 100);
 }
+
+
+// Fetch wishlist map for the logged-in user
+$wishlistProductMap = [];
+if (!empty($customer_logged_in) && !empty($customer_id)) {
+    try {
+        $wishlistStmt = $pdo->prepare("SELECT product_id FROM wishlist WHERE user_id = ?");
+        $wishlistStmt->execute([$customer_id]);
+        $wishlistIds = $wishlistStmt->fetchAll(PDO::FETCH_COLUMN, 0);
+        if ($wishlistIds) {
+            $wishlistProductMap = array_fill_keys($wishlistIds, true);
+        }
+    } catch (PDOException $e) { $wishlistProductMap = []; }
+}
+
+// 6. Fetch Related Products (Same category, excluding current) with Ratings
+$relatedStmt = $pdo->prepare("
+    SELECT p.*, 
+           IFNULL(AVG(r.rating), 0) AS avg_rating, 
+           COUNT(r.review_id) AS total_reviews
+    FROM products p
+    LEFT JOIN reviews r ON p.product_id = r.product_id AND r.status = 'approved'
+    WHERE p.category_id = ? AND p.product_id != ? AND p.status = 'active' 
+    GROUP BY p.product_id
+    LIMIT 4
+");
+$relatedStmt->execute([$product['category_id'], $product_id]);
+$relatedProducts = $relatedStmt->fetchAll(PDO::FETCH_ASSOC);
+
+
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -321,6 +351,125 @@ if ($product['discount'] > 0) {
             color: var(--text-muted);
             line-height: 1.6;
         }
+
+
+
+        /* --- EXACT MATCH FROM INDEX.PHP --- */
+.product-card {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    position: relative;
+    border: none !important; /* Remove the border if you want the clean look from index */
+}
+
+.product-card:hover {
+    transform: translateY(-5px);
+}
+
+.product-card .image-wrapper {
+    position: relative;
+    border-radius: var(--card-radius);
+    overflow: hidden;
+    background: #f5f7fb;
+    padding-top: 100%;
+    margin-bottom: 1rem;
+}
+
+.product-card .image-wrapper a {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: block;
+    z-index: 1;
+}
+
+.product-card .image-wrapper img {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.4s ease;
+}
+
+.product-card:hover .image-wrapper img {
+    transform: scale(1.04);
+}
+
+.overlay-actions {
+    position: absolute;
+    bottom: 20px;
+    left: 0;
+    right: 0;
+    display: flex;
+    justify-content: center;
+    gap: 12px;
+    opacity: 0;
+    transform: translateY(20px);
+    transition: all 0.3s ease-in-out;
+    z-index: 5;
+}
+
+.product-card:hover .overlay-actions {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.overlay-btn {
+    width: 45px;
+    height: 45px;
+    border-radius: 50%;
+    background: #fff;
+    border: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-color);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    transition: all 0.2s ease;
+    font-size: 1.25rem;
+    cursor: pointer;
+}
+
+.overlay-btn:hover {
+    background: var(--text-color);
+    color: #fff;
+    transform: scale(1.1);
+}
+
+.badge-sale {
+    position: absolute;
+    top: 14px;
+    left: 14px;
+    background: var(--text-color);
+    color: #fff;
+    font-size: 0.75rem;
+    padding: 4px 10px;
+    border-radius: 4px;
+    z-index: 2;
+    font-weight: 600;
+}
+
+.price-wrapper .current-price {
+    font-weight: 700;
+    color: var(--accent-color);
+    font-size: 1.1rem;
+}
+
+.price-wrapper .old-price {
+    font-size: 0.95rem;
+    color: #94a3b8;
+    text-decoration: line-through;
+    margin-left: 8px;
+}
+
+.overlay-btn.wishlist-active { color: red; }
+.overlay-btn.wishlist-active:hover { background: red; color: white; }
+.category-label { color: #94a3b8; text-transform: uppercase; font-size: 0.75rem; letter-spacing: 0.5px; }
+
+
     </style>
 </head>
 <body>
@@ -329,16 +478,6 @@ if ($product['discount'] > 0) {
 
 <div class="container py-5">
     
-    <nav aria-label="breadcrumb" class="mb-4">
-        <ol class="breadcrumb">
-            <li class="breadcrumb-item"><a href="index.php">Home</a></li>
-            <li class="breadcrumb-item"><a href="shop.php">Shop</a></li>
-            <?php if(!empty($product['category_name'])): ?>
-                <li class="breadcrumb-item"><a href="shop.php?category=<?= $product['category_id'] ?>"><?= htmlspecialchars($product['category_name']) ?></a></li>
-            <?php endif; ?>
-            <li class="breadcrumb-item active" aria-current="page"><?= htmlspecialchars($product['name']) ?></li>
-        </ol>
-    </nav>
 
     <div class="row g-5">
         
@@ -441,7 +580,19 @@ if ($product['discount'] > 0) {
                     </div>
                 </form>
 
-                <div class="accordion" id="productAccordion">
+
+
+                <div class="mt-4 pt-3 border-top">
+                    <span class="small text-muted fw-bold text-uppercase me-2">Share:</span>
+                    <a href="#" class="text-muted me-3"><i class="bi bi-facebook"></i></a>
+                    <a href="#" class="text-muted me-3"><i class="bi bi-twitter-x"></i></a>
+                    <a href="#" class="text-muted me-3"><i class="bi bi-pinterest"></i></a>
+                </div>
+
+            </div>
+        </div>
+
+        <div class="accordion" id="productAccordion">
                     
                     <div class="accordion-item">
                         <h2 class="accordion-header">
@@ -452,8 +603,9 @@ if ($product['discount'] > 0) {
                         <div id="collapseOne" class="accordion-collapse collapse" data-bs-parent="#productAccordion">
                             <div class="accordion-body">
                                 <ul class="list-unstyled text-muted small">
-                                    <li><strong>SKU:</strong> <?= $product['product_id'] ?>-GEN</li>
-                                    <li><strong>Stock:</strong> <?= $product['stock'] > 0 ? 'In Stock (' . $product['stock'] . ' units)' : 'Out of Stock' ?></li>
+                                <p class="text-muted mb-4">
+                                    <?= nl2br(htmlspecialchars($product['description'])) ?>
+                                </p>
                                     <?php if ($product['brand_name']): ?>
                                         <li>
                                             <strong>Brand:</strong> 
@@ -564,22 +716,88 @@ if ($product['discount'] > 0) {
                     </div>
                 
                 </div>
+    </div>
 
-                <div class="mt-4 pt-3 border-top">
-                    <span class="small text-muted fw-bold text-uppercase me-2">Share:</span>
-                    <a href="#" class="text-muted me-3"><i class="bi bi-facebook"></i></a>
-                    <a href="#" class="text-muted me-3"><i class="bi bi-twitter-x"></i></a>
-                    <a href="#" class="text-muted me-3"><i class="bi bi-pinterest"></i></a>
+<div class="mt-5 pt-5">
+    <h3 class="fw-bold mb-4 text-start">You May Also Like</h3>
+    <div class="row g-4">
+        <?php if (!empty($relatedProducts)): ?>
+            <?php foreach ($relatedProducts as $rp): ?>
+                <?php 
+                    $rpFinalPrice = ($rp['discount'] > 0) ? $rp['price'] - ($rp['price'] * $rp['discount'] / 100) : $rp['price'];
+                    $rpImageUrl = getImgUrl($rp['thumbnail'] ?: ($rp['primary_image'] ?: ''));
+                    
+                    // Wishlist Check
+                    $isWishlisted = !empty($wishlistProductMap[$rp['product_id']]);
+                    $wishlistIconClasses = $isWishlisted ? 'bi bi-heart-fill' : 'bi bi-heart';
+                    $wishlistActiveClass = $isWishlisted ? 'wishlist-active' : '';
+                ?>
+                <div class="col-6 col-md-3">
+                    <div class="product-card bg-white p-3 h-100">
+                        <?php if (($rp['discount'] ?? 0) > 0): ?>
+                            <span class="badge-sale">-<?= number_format($rp['discount'], 0) ?>%</span>
+                        <?php endif; ?>
+
+                        <div class="image-wrapper">
+                            <a href="product_details.php?id=<?= $rp['product_id'] ?>">
+                                <img src="<?= htmlspecialchars($rpImageUrl) ?>" alt="<?= htmlspecialchars($rp['name']) ?>">
+                            </a>
+
+                            <div class="overlay-actions">
+                                <?php if ($customer_logged_in): ?>
+                                    <button type="button" class="overlay-btn" title="Add to Cart"
+                                            onclick="event.stopPropagation(); addToCart(<?= $rp['product_id'] ?>, '<?= addslashes($rp['name']) ?>', <?= $rpFinalPrice ?>, '<?= htmlspecialchars($rpImageUrl) ?>')">
+                                        <i class="bi bi-cart-plus"></i>
+                                    </button>
+                                    <button type="button" class="overlay-btn wishlist-heart <?= $wishlistActiveClass ?>" 
+                                            title="Add to Wishlist"
+                                            data-id="<?= $rp['product_id'] ?>"
+                                            data-name="<?= htmlspecialchars($rp['name']) ?>"
+                                            data-price="<?= $rpFinalPrice ?>"
+                                            data-image="<?= htmlspecialchars($rpImageUrl) ?>"
+                                            onclick="event.stopPropagation(); toggleWishlist(this)">
+                                        <i class="<?= $wishlistIconClasses ?>"></i>
+                                    </button>
+                                <?php else: ?>
+                                    <button type="button" class="overlay-btn" title="Add to Cart" data-bs-toggle="modal" data-bs-target="#loginModal">
+                                        <i class="bi bi-cart-plus"></i>
+                                    </button>
+                                    <button type="button" class="overlay-btn text-danger" title="Add to Wishlist" data-bs-toggle="modal" data-bs-target="#loginModal">
+                                        <i class="bi bi-heart"></i>
+                                    </button>
+                                <?php endif; ?>
+                            </div>
+                        </div>
+
+                        <div class="d-flex justify-content-between align-items-center small mb-1">
+                        <span class="category-label text-uppercase"><?= htmlspecialchars($product['category_name'] ?? 'Electronics') ?></span>
+                        <span class="text-warning">
+                            <i class="bi bi-star-fill"></i> 
+                            <?= number_format($rp['avg_rating'], 1) ?> 
+                            <span class="text-secondary">(<?= $rp['total_reviews'] ?>)</span>
+                        </span>
+                        </div>
+
+                        <h3 class="product-title mb-2" style="font-size: 1rem; font-weight: 700;">
+                            <a href="product_details.php?id=<?= $rp['product_id'] ?>" class="text-decoration-none text-reset">
+                                <?= htmlspecialchars($rp['name']) ?>
+                            </a>
+                        </h3>
+                        
+                        <div class="price-wrapper">
+                            <span class="current-price" style="color: var(--accent-color); font-weight: 700;">₹<?= number_format($rpFinalPrice, 2) ?></span>
+                            <?php if ($rp['discount'] > 0): ?>
+                                <span class="old-price text-muted text-decoration-line-through small ms-1">₹<?= number_format($rp['price'], 2) ?></span>
+                            <?php endif; ?>
+                        </div>
+                    </div>
                 </div>
-
-            </div>
-        </div>
+            <?php endforeach; ?>
+        <?php else: ?>
+            <div class="col-12 text-center text-muted py-4">No related products found.</div>
+        <?php endif; ?>
     </div>
-
-    <div class="mt-5 pt-5">
-        <h3 class="fw-bold mb-4 text-center">You May Also Like</h3>
-        <p class="text-center text-muted">Related products loading...</p>
-    </div>
+</div>
 
 </div>
 
