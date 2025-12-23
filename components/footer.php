@@ -1,7 +1,25 @@
 <?php
 require_once __DIR__ . '/../config/config.php';
 
-// Fetch active social media links
+// --- 1. Fetch General Site Settings ---
+try {
+    $settings_stmt = $pdo->query("SELECT setting_key, setting_value FROM site_settings");
+    $site_settings = $settings_stmt->fetchAll(PDO::FETCH_KEY_PAIR);
+} catch (PDOException $e) {
+    $site_settings = [];
+}
+
+// Helper function to get setting with a fallback
+function getSetting($key, $default = '', $settings = []) {
+    return htmlspecialchars($settings[$key] ?? $default);
+}
+
+$siteName    = getSetting('site_name', 'iHub Electronics', $site_settings);
+$siteEmail   = getSetting('contact_email', 'support@ihubelectronics.com', $site_settings);
+$sitePhone   = getSetting('contact_phone', '(603) 555-0123', $site_settings);
+$siteAddress = getSetting('contact_address', '16122 Collins Street, Melbourne', $site_settings);
+
+// --- 2. Fetch active social media links ---
 try {
     $social_stmt = $pdo->prepare("SELECT platform_name, link_url FROM social_media WHERE status = 'active' ORDER BY created_at DESC");
     $social_stmt->execute();
@@ -13,13 +31,13 @@ try {
 // Map platform names to Bootstrap Icons
 function getSocialIcon($name) {
     $name = strtolower($name);
-    if (strpos($name, 'facebook') !== false) return 'bi-facebook';
-    if (strpos($name, 'instagram') !== false) return 'bi-instagram';
-    if (strpos($name, 'twitter') !== false || strpos($name, 'x') !== false) return 'bi-twitter-x';
-    if (strpos($name, 'youtube') !== false) return 'bi-youtube';
-    if (strpos($name, 'linkedin') !== false) return 'bi-linkedin';
-    if (strpos($name, 'whatsapp') !== false) return 'bi-whatsapp';
-    if (strpos($name, 'tiktok') !== false) return 'bi-tiktok';
+    if (str_contains($name, 'facebook')) return 'bi-facebook';
+    if (str_contains($name, 'instagram')) return 'bi-instagram';
+    if (str_contains($name, 'twitter') || str_contains($name, 'x')) return 'bi-twitter-x';
+    if (str_contains($name, 'youtube')) return 'bi-youtube';
+    if (str_contains($name, 'linkedin')) return 'bi-linkedin';
+    if (str_contains($name, 'whatsapp')) return 'bi-whatsapp';
+    if (str_contains($name, 'tiktok')) return 'bi-tiktok';
     return 'bi-link-45deg';
 }
 ?>
@@ -29,14 +47,14 @@ function getSocialIcon($name) {
     <div class="row g-4">
 
       <div class="col-lg-4 col-md-6">
-        <h5 class="fw-bold mb-3 text-primary">iHub Electronics</h5>
+        <h5 class="fw-bold mb-3 text-primary"><?= $siteName ?></h5>
         <p class="text-secondary small mb-4" style="max-width: 300px; line-height: 1.6;">
           Your one-stop destination for the latest premium electronics, trending gadgets, and top-tier tech brands.
         </p>
         <div class="text-secondary small">
-          <p class="mb-2"><i class="bi bi-geo-alt me-2 text-primary"></i> 16122 Collins Street, Melbourne</p>
-          <p class="mb-2"><i class="bi bi-telephone me-2 text-primary"></i> (603) 555-0123</p>
-          <p class="mb-0"><i class="bi bi-envelope me-2 text-primary"></i> support@ihubelectronics.com</p>
+          <p class="mb-2"><i class="bi bi-geo-alt me-2 text-primary"></i> <?= nl2br($siteAddress) ?></p>
+          <p class="mb-2"><i class="bi bi-telephone me-2 text-primary"></i> <?= $sitePhone ?></p>
+          <p class="mb-0"><i class="bi bi-envelope me-2 text-primary"></i> <?= $siteEmail ?></p>
         </div>
       </div>
 
@@ -79,7 +97,7 @@ function getSocialIcon($name) {
     <div class="row align-items-center">
       <div class="col-md-6 text-center text-md-start">
         <p class="mb-0 text-secondary small">
-          &copy; <?= date('Y') ?> <span class="fw-bold text-dark">iHub Electronics</span>. All rights reserved.
+          &copy; <?= date('Y') ?> <span class="fw-bold text-dark"><?= $siteName ?></span>. All rights reserved.
         </p>
       </div>
       <div class="col-md-6 text-center text-md-end mt-3 mt-md-0">

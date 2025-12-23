@@ -1,3 +1,8 @@
+<?php if (isset($is_maintenance) && $is_maintenance === '1'): ?>
+    <div class="bg-red-600 text-white text-center py-2 text-xs font-bold uppercase tracking-widest animate-pulse">
+        ⚠️ Site is currently in Maintenance Mode. Customers cannot shop.
+    </div>
+<?php endif; ?>
 <?php
 // Load notifications for the current admin on ANY admin page that includes this header.
 // If a page already set $adminNotifications / $adminUnreadCount, we respect that.

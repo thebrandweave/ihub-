@@ -48,6 +48,22 @@ $avgRating = $pdo->query("SELECT AVG(rating) FROM reviews WHERE status = 'approv
 // Low stock alerts
 $lowStockProducts = $pdo->query("SELECT name, stock FROM products WHERE stock < 5 LIMIT 5")->fetchAll(PDO::FETCH_ASSOC);
 
+// --- Fetch dynamic threshold from settings ---
+$threshold_stmt = $pdo->prepare("SELECT setting_value FROM site_settings WHERE setting_key = 'low_stock_threshold'");
+$threshold_stmt->execute();
+$threshold = $threshold_stmt->fetchColumn() ?: 5; // Default to 5 if not found in DB
+
+// --- Fetch products using the dynamic threshold ---
+$lowStockStmt = $pdo->prepare("SELECT name, stock FROM products WHERE stock <= ? ORDER BY stock ASC LIMIT 5");
+$lowStockStmt->execute([$threshold]);
+$lowStockProducts = $lowStockStmt->fetchAll(PDO::FETCH_ASSOC);
+
+// --- Fetch total count for the small red label ---
+$totalLowStockStmt = $pdo->prepare("SELECT COUNT(*) FROM products WHERE stock <= ?");
+$totalLowStockStmt->execute([$threshold]);
+$totalLowStockCount = $totalLowStockStmt->fetchColumn();
+
+
 // Sales data (last 7 days)
 $salesData = $pdo->query("
     SELECT DATE(order_date) as date, SUM(total_amount) as total
@@ -309,6 +325,7 @@ function getStatusBadge($status) {
         </div>
     </div>
     <?php endif; ?>
+    
 
     <!-- Pending Reviews Alert -->
     <?php if ($pendingReviews > 0): ?>

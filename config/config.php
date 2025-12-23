@@ -1,5 +1,12 @@
 <?php
 // ======================
+// SESSION START
+// ======================
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
+
+// ======================
 // DATABASE CONNECTION
 // ======================
 $host  = "localhost";
@@ -21,15 +28,58 @@ try {
     die("Database Connection Failed: " . $e->getMessage());
 }
 
+// ======================
+// ✅ AUTO BASE URL (BULLETPROOF METHOD)
+// ======================
+$scriptPath = str_replace('\\', '/', $_SERVER['SCRIPT_NAME']);
+$pathParts = array_filter(explode('/', $scriptPath)); 
+$pathParts = array_values($pathParts); 
+
+$skipDirs = ['htdocs', 'www', 'wwwroot', 'public_html', 'html'];
+$projectName = '';
+foreach ($pathParts as $part) {
+    if (!in_array(strtolower($part), $skipDirs)) {
+        $projectName = $part;
+        break;
+    }
+}
+
+$BASE_URL = !empty($projectName) ? '/' . $projectName . '/' : '/';
+if (substr($BASE_URL, -1) !== '/') $BASE_URL .= '/';
+$asset_path = $BASE_URL;
+
+// ======================
+// ✅ MAINTENANCE MODE GATEKEEPER
+// ======================
+try {
+    // 1. Fetch maintenance status
+    $m_stmt = $pdo->prepare("SELECT setting_value FROM site_settings WHERE setting_key = 'maintenance_mode'");
+    $m_stmt->execute();
+    $is_maintenance = $m_stmt->fetchColumn();
+
+    if ($is_maintenance === '1') {
+        $current_page = basename($_SERVER['PHP_SELF']);
+        $is_admin = (isset($_SESSION['role']) && $_SESSION['role'] === 'admin');
+        
+        // Check if we are inside the admin folder path
+        $is_admin_path = strpos($_SERVER['REQUEST_URI'], $BASE_URL . 'admin/') !== false;
+
+        // Redirect non-admins to maintenance page (unless they are already there or in admin panel)
+        if (!$is_admin && !$is_admin_path && $current_page !== 'maintenance/') {
+            header("Location: " . $BASE_URL . "maintenance/");
+            exit;
+        }
+    }
+} catch (Exception $e) {
+    // Silently continue if table doesn't exist yet
+}
 
 // ======================
 // JWT SETTINGS
 // ======================
-// IMPORTANT: Use environment variables in production
 const JWT_SECRET = 'replace_with_a_very_long_random_secret_string_!@#123';
-const ACCESS_TOKEN_EXP_SECONDS = 900;           // 15 minutes
-const REFRESH_TOKEN_EXP_SECONDS = 60 * 60 * 24 * 30;  // 30 days
-
+const ACCESS_TOKEN_EXP_SECONDS = 900;
+const REFRESH_TOKEN_EXP_SECONDS = 60 * 60 * 24 * 30;
 
 // ======================
 // COOKIE SETTINGS
@@ -39,51 +89,9 @@ const COOKIE_HTTPONLY = true;
 const COOKIE_SAMESITE = 'Lax';
 const COOKIE_PATH = '/';
 
-
-// ======================
-// ✅ AUTO BASE URL (BULLETPROOF METHOD)
-// ======================
-
-// Get the script path (e.g., /ihub/shop/index.php or /ihub/index.php)
-$scriptPath = str_replace('\\', '/', $_SERVER['SCRIPT_NAME']);
-
-// Extract directory segments
-$pathParts = array_filter(explode('/', $scriptPath)); // Remove empty elements
-$pathParts = array_values($pathParts); // Re-index array
-
-// Skip common web server directories (htdocs, www, wwwroot)
-$skipDirs = ['htdocs', 'www', 'wwwroot', 'public_html', 'html'];
-
-// Find the first valid project directory
-$projectName = '';
-foreach ($pathParts as $part) {
-    if (!in_array(strtolower($part), $skipDirs)) {
-        $projectName = $part;
-        break;
-    }
-}
-
-// Build BASE_URL
-if (!empty($projectName)) {
-    $BASE_URL = '/' . $projectName . '/';
-} else {
-    // Fallback: if in root or can't determine, use root
-    $BASE_URL = '/';
-}
-
-// Ensure BASE_URL always ends with /
-if (substr($BASE_URL, -1) !== '/') {
-    $BASE_URL .= '/';
-}
-
-// Also create $asset_path for consistency (same as BASE_URL)
-// This matches the pattern from the example code
-$asset_path = $BASE_URL;
-
 // ======================
 // HELPERS
 // ======================
-
 function getProjectRoot() {
     return realpath(dirname(__DIR__));
 }
