@@ -1,5 +1,27 @@
 <?php
 require_once __DIR__ . '/../config/config.php';
+
+// Fetch active social media links
+try {
+    $social_stmt = $pdo->prepare("SELECT platform_name, link_url FROM social_media WHERE status = 'active' ORDER BY created_at DESC");
+    $social_stmt->execute();
+    $social_links = $social_stmt->fetchAll(PDO::FETCH_ASSOC);
+} catch (PDOException $e) {
+    $social_links = [];
+}
+
+// Map platform names to Bootstrap Icons
+function getSocialIcon($name) {
+    $name = strtolower($name);
+    if (strpos($name, 'facebook') !== false) return 'bi-facebook';
+    if (strpos($name, 'instagram') !== false) return 'bi-instagram';
+    if (strpos($name, 'twitter') !== false || strpos($name, 'x') !== false) return 'bi-twitter-x';
+    if (strpos($name, 'youtube') !== false) return 'bi-youtube';
+    if (strpos($name, 'linkedin') !== false) return 'bi-linkedin';
+    if (strpos($name, 'whatsapp') !== false) return 'bi-whatsapp';
+    if (strpos($name, 'tiktok') !== false) return 'bi-tiktok';
+    return 'bi-link-45deg';
+}
 ?>
 
 <footer class="container-fluid bg-white pt-5 pb-4">
@@ -42,10 +64,11 @@ require_once __DIR__ . '/../config/config.php';
         <h6 class="fw-bold mb-3">Connect With Us</h6>
         <p class="text-secondary small mb-3">Stay updated with latest offers and tech news.</p>
         <div class="d-flex gap-2">
-          <a href="#" class="btn btn-light rounded-circle p-0" style="width:38px; height:38px; display:flex; align-items:center; justify-content:center;"><i class="bi bi-facebook"></i></a>
-          <a href="#" class="btn btn-light rounded-circle p-0" style="width:38px; height:38px; display:flex; align-items:center; justify-content:center;"><i class="bi bi-instagram"></i></a>
-          <a href="#" class="btn btn-light rounded-circle p-0" style="width:38px; height:38px; display:flex; align-items:center; justify-content:center;"><i class="bi bi-twitter-x"></i></a>
-          <a href="#" class="btn btn-light rounded-circle p-0" style="width:38px; height:38px; display:flex; align-items:center; justify-content:center;"><i class="bi bi-youtube"></i></a>
+          <?php foreach ($social_links as $link): ?>
+            <a href="<?= htmlspecialchars($link['link_url']) ?>" target="_blank" class="btn btn-light rounded-circle p-0" style="width:38px; height:38px; display:flex; align-items:center; justify-content:center;">
+              <i class="bi <?= getSocialIcon($link['platform_name']) ?>"></i>
+            </a>
+          <?php endforeach; ?>
         </div>
       </div>
 
