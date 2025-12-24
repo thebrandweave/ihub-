@@ -589,7 +589,7 @@ function getFinalPrice($price, $discount) {
                                 <i class="bi bi-basket3 display-4 text-muted mb-3"></i>
                                 <h5>No products found</h5>
                                 <p class="text-muted">Try adjusting your search or filter options.</p>
-                                <a href="shop.php" class="btn btn-outline-dark mt-2">Clear Filters</a>
+                                <a href="../shop/" class="btn btn-outline-dark mt-2">Clear Filters</a>
                             </div>
                         </div>
                     <?php endif; ?>
