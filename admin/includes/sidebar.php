@@ -195,7 +195,7 @@ function isActive($menu_path) {
         </nav>
 
         <div class="px-3 py-3 border-t border-gray-200 bg-white">
-            <a href="<?= $BASE_URL ?>auth/logout.php"
+            <a href="<?= $BASE_URL ?>auth/admin/logout.php"
                 class="flex items-center px-3 py-2.5 text-sm text-red-500 hover:bg-red-50 rounded-lg transition">
                 <svg class="w-5 h-5 mr-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3v-4a3 3 0 013-3h4a3 3 0 013 3v1"/>

@@ -49,32 +49,6 @@ if (substr($BASE_URL, -1) !== '/') $BASE_URL .= '/';
 $asset_path = $BASE_URL;
 
 // ======================
-// ✅ MAINTENANCE MODE GATEKEEPER
-// ======================
-try {
-    // 1. Fetch maintenance status
-    $m_stmt = $pdo->prepare("SELECT setting_value FROM site_settings WHERE setting_key = 'maintenance_mode'");
-    $m_stmt->execute();
-    $is_maintenance = $m_stmt->fetchColumn();
-
-    if ($is_maintenance === '1') {
-        $current_page = basename($_SERVER['PHP_SELF']);
-        $is_admin = (isset($_SESSION['role']) && $_SESSION['role'] === 'admin');
-        
-        // Check if we are inside the admin folder path
-        $is_admin_path = strpos($_SERVER['REQUEST_URI'], $BASE_URL . 'admin/') !== false;
-
-        // Redirect non-admins to maintenance page (unless they are already there or in admin panel)
-        if (!$is_admin && !$is_admin_path && $current_page !== 'maintenance/') {
-            header("Location: " . $BASE_URL . "maintenance/");
-            exit;
-        }
-    }
-} catch (Exception $e) {
-    // Silently continue if table doesn't exist yet
-}
-
-// ======================
 // JWT SETTINGS
 // ======================
 const JWT_SECRET = 'replace_with_a_very_long_random_secret_string_!@#123';

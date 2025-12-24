@@ -6,25 +6,43 @@ require_once __DIR__ . '/jwt_helper.php';
 
 // helper to redirect to login
 function redirectToLogin() {
-    // Get base path from script name - find the project root
-    $script = $_SERVER['SCRIPT_NAME'] ?? '';
-    // Remove /admin/ or /auth/ and everything after to get base path
-    if (preg_match('#^(/.+?)/(admin|auth)/#', $script, $matches)) {
-        $basePath = $matches[1];
+    global $BASE_URL;
+    // Use BASE_URL from config if available, otherwise calculate it
+    if (isset($BASE_URL)) {
+        $loginUrl = rtrim($BASE_URL, '/') . '/auth/admin/login.php';
     } else {
-        // Fallback: go up from current script location
-        $basePath = dirname(dirname($script));
-        $basePath = rtrim($basePath, '/');
+        // Fallback: Get base path from script name - find the project root
+        $script = $_SERVER['SCRIPT_NAME'] ?? '';
+        // Remove /admin/ or /auth/ and everything after to get base path
+        if (preg_match('#^(/.+?)/(admin|auth)/#', $script, $matches)) {
+            $basePath = $matches[1];
+        } else {
+            // Fallback: go up from current script location
+            $basePath = dirname(dirname($script));
+            $basePath = rtrim($basePath, '/');
+        }
+        if (empty($basePath) || $basePath === '.') {
+            $basePath = '';
+        }
+        $loginUrl = $basePath . '/auth/admin/login.php';
     }
-    if (empty($basePath) || $basePath === '.') {
-        $basePath = '';
-    }
-    header("Location: {$basePath}/auth/login.php");
+    header("Location: " . $loginUrl);
     exit;
 }
 
-// get token from cookie
+// Check if there's an existing session but no valid tokens - clear it and redirect
+$hasSession = isset($_SESSION['admin_id']);
 $accessToken = $_COOKIE['access_token'] ?? null;
+$refreshToken = $_COOKIE['refresh_token'] ?? null;
+
+// If there's a session but no tokens at all, clear session and redirect
+if ($hasSession && !$accessToken && !$refreshToken) {
+    session_unset();
+    session_destroy();
+    redirectToLogin();
+}
+
+// get token from cookie
 if ($accessToken) {
     $data = decodeAccessToken($accessToken);
     if ($data && isset($data['sub'])) {
@@ -41,7 +59,6 @@ if ($accessToken) {
 }
 
 // Try refreshing token if access token expired
-$refreshToken = $_COOKIE['refresh_token'] ?? null;
 if (!$refreshToken) redirectToLogin();
 
 // Find matching refresh token
@@ -84,3 +101,7 @@ setAuthCookies($newAccess, $newRefreshRaw, time() + REFRESH_TOKEN_EXP_SECONDS);
 $_SESSION['admin_id'] = $user['user_id'];
 $_SESSION['admin_role'] = $user['role'];
 
+// Final check: ensure admin session is set, otherwise redirect to login
+if (!isset($_SESSION['admin_id']) || $_SESSION['admin_role'] !== 'admin') {
+    redirectToLogin();
+}

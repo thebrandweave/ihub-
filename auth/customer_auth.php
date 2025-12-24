@@ -3,10 +3,6 @@
 require_once __DIR__ . '/../config/config.php';
 require_once __DIR__ . '/jwt_helper.php';
 
-if (session_status() === PHP_SESSION_NONE) {
-    session_start();
-}
-
 // Initialize variables
 $customer_logged_in = false;
 $customer_id = null;

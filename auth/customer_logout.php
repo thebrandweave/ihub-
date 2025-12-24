@@ -1,7 +1,6 @@
 <?php
 require_once __DIR__ . '/../config/config.php';
 require_once __DIR__ . '/jwt_helper.php';
-session_start();
 
 $refreshRaw = $_COOKIE['refresh_token'] ?? null;
 if ($refreshRaw) {

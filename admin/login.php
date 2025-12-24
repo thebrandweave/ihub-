@@ -1,6 +1,6 @@
 <?php
-// Redirect to root auth/login.php
-header("Location: ../auth/login.php");
+// Redirect to auth/admin/login.php
+header("Location: ../auth/admin/login.php");
 exit;
 ?>
 

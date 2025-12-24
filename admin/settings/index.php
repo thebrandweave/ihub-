@@ -14,7 +14,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $settings_to_save = [
             'site_name', 'contact_email', 'contact_phone', 
             'contact_address', 'low_stock_threshold',
-            'auto_approve_reviews', 'maintenance_mode'
+            'auto_approve_reviews'
         ];
 
         foreach ($settings_to_save as $key) {
@@ -100,32 +100,6 @@ include __DIR__ . "/../includes/header.php";
         </div>
 
         <div class="space-y-6">
-            
-            <div class="bg-white rounded-2xl shadow-sm border border-orange-100 p-6 relative overflow-hidden">
-                <div class="absolute top-0 right-0 p-3">
-                    <span class="flex h-3 w-3">
-                        <span class="animate-ping absolute inline-flex h-full w-full rounded-full <?= getSet('maintenance_mode') == '1' ? 'bg-orange-400' : 'bg-green-400' ?> opacity-75"></span>
-                        <span class="relative inline-flex rounded-full h-3 w-3 <?= getSet('maintenance_mode') == '1' ? 'bg-orange-500' : 'bg-green-500' ?>"></span>
-                    </span>
-                </div>
-
-                <h2 class="text-sm font-bold text-gray-800 mb-4 flex items-center uppercase tracking-widest">
-                    <svg class="w-5 h-5 mr-2 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
-                    System Status
-                </h2>
-                
-                <div class="flex items-center justify-between p-4 bg-orange-50 rounded-2xl border border-orange-100">
-                    <div>
-                        <span class="text-xs font-bold text-orange-900 block">Maintenance Mode</span>
-                        <span class="text-[10px] text-orange-600">Site will be hidden from public</span>
-                    </div>
-                    <label class="relative inline-flex items-center cursor-pointer">
-                        <input type="checkbox" name="maintenance_mode" value="1" <?= getSet('maintenance_mode') == '1' ? 'checked' : '' ?> class="sr-only peer">
-                        <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-orange-500 transition-all"></div>
-                    </label>
-                </div>
-            </div>
-
             <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
                 <h2 class="text-sm font-bold text-gray-800 mb-6 flex items-center uppercase tracking-widest">
                     <svg class="w-5 h-5 mr-2 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"></path></svg>
