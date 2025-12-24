@@ -6,30 +6,53 @@ require_once __DIR__ . '/../config/config.php';
 $jwtAutoloadPath = __DIR__ . '/../admin/vendor/autoload.php';
 if (file_exists($jwtAutoloadPath)) {
     require_once $jwtAutoloadPath; // firebase/php-jwt
-} else {
-    error_log('JWT autoload file missing at: ' . $jwtAutoloadPath);
 }
-use Firebase\JWT\JWT;
-use Firebase\JWT\Key;
 
+// Only import and use JWT classes if the library is actually available
+if (class_exists('\\Firebase\\JWT\\JWT')) {
+    use Firebase\JWT\JWT;
+    use Firebase\JWT\Key;
+}
+
+/**
+ * Generate an access token.
+ * Returns string on success, or null if JWT library is not available or encoding fails.
+ */
 function generateAccessToken($user) {
-    $now = time();
-    $payload = [
-        'iss' => $_SERVER['HTTP_HOST'] ?? 'your-site',
-        'iat' => $now,
-        'exp' => $now + ACCESS_TOKEN_EXP_SECONDS,
-        'sub' => $user['user_id'],
-        'role' => $user['role'] ?? 'customer',
-    ];
-    return JWT::encode($payload, JWT_SECRET, 'HS256');
+    if (!class_exists('\\Firebase\\JWT\\JWT')) {
+        error_log('generateAccessToken: Firebase\\JWT\\JWT class not available. Skipping JWT generation.');
+        return null;
+    }
+
+    try {
+        $now = time();
+        $payload = [
+            'iss' => $_SERVER['HTTP_HOST'] ?? 'your-site',
+            'iat' => $now,
+            'exp' => $now + ACCESS_TOKEN_EXP_SECONDS,
+            'sub' => $user['user_id'],
+            'role' => $user['role'] ?? 'customer',
+        ];
+        return JWT::encode($payload, JWT_SECRET, 'HS256');
+    } catch (\Throwable $e) {
+        error_log('generateAccessToken error: ' . $e->getMessage());
+        return null;
+    }
 }
 
+/**
+ * Decode access token.
+ * Returns array on success, or null if JWT is invalid / library missing.
+ */
 function decodeAccessToken($token) {
+    if (!class_exists('\\Firebase\\JWT\\JWT')) {
+        return null;
+    }
     try {
         $decoded = JWT::decode($token, new Key(JWT_SECRET, 'HS256'));
         // return as array
         return json_decode(json_encode($decoded), true);
-    } catch (Exception $e) {
+    } catch (\Throwable $e) {
         return null;
     }
 }
