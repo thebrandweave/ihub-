@@ -588,8 +588,6 @@ $LOGO_URL = $SITE_URL . "assets/image/logo/ihub.png";
 
     <div class="top-bar-links d-flex gap-3 mt-1 mt-lg-0">
       <a href="<?= $SITE_URL ?>contact/" class="top-link"><i class="bi bi-telephone me-1"></i>Contact</a>
-      <span class="text-white-50 d-none d-lg-inline">|</span>
-      <a href="<?= $SITE_URL ?>account/orders.php" class="top-link"><i class="bi bi-truck me-1"></i>Track Order</a>
     </div>
 
   </div>

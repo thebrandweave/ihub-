@@ -122,7 +122,6 @@ body{font-family:Arial,sans-serif;color:#0f172a;background:#ffffff;}
             <li><a href="index.php"><i class="bi bi-person-circle"></i>Account overview</a></li>
             <li><a href="orders.php"><i class="bi bi-box-seam"></i>Your orders</a></li>
             <li><a href="addresses.php"><i class="bi bi-geo-alt"></i>Your addresses</a></li>
-            <li><a href="../wishlist/wishlist_action.php" onclick="event.preventDefault(); document.querySelector('[data-bs-target=#wishlistDrawer]')?.click();"><i class="bi bi-heart"></i>Your wishlist</a></li>
             <li><a href="change_password.php" class="active"><i class="bi bi-shield-lock"></i>Login &amp; security</a></li>
           </ul>
         </div>
