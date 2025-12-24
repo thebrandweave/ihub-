@@ -21,31 +21,49 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $customer = $stmt->fetch(PDO::FETCH_ASSOC);
 
         if ($customer && password_verify($password, $customer['password_hash'])) {
-            $accessToken = generateAccessToken($customer);
-            $refreshRaw = generateRefreshTokenString();
-            $refreshHash = hashToken($refreshRaw);
-            $exp = date('Y-m-d H:i:s', time() + REFRESH_TOKEN_EXP_SECONDS);
+            try {
+                $accessToken = generateAccessToken($customer);
+                $refreshRaw = generateRefreshTokenString();
+                $refreshHash = hashToken($refreshRaw);
+                $exp = date('Y-m-d H:i:s', time() + REFRESH_TOKEN_EXP_SECONDS);
 
-            $pdo->prepare("INSERT INTO refresh_tokens (user_id, token_hash, user_agent, ip_address, expires_at)
-                           VALUES (?, ?, ?, ?, ?)")
-                ->execute([$customer['user_id'], $refreshHash, $_SERVER['HTTP_USER_AGENT'] ?? '', $_SERVER['REMOTE_ADDR'] ?? '', $exp]);
+                $pdo->prepare("INSERT INTO refresh_tokens (user_id, token_hash, user_agent, ip_address, expires_at)
+                               VALUES (?, ?, ?, ?, ?)")
+                    ->execute([
+                        $customer['user_id'],
+                        $refreshHash,
+                        $_SERVER['HTTP_USER_AGENT'] ?? '',
+                        $_SERVER['REMOTE_ADDR'] ?? '',
+                        $exp
+                    ]);
 
-            setAuthCookies($accessToken, $refreshRaw, time() + REFRESH_TOKEN_EXP_SECONDS);
-            $_SESSION['customer_id'] = $customer['user_id'];
-            $_SESSION['customer_name'] = $customer['full_name'];
-            $_SESSION['customer_email'] = $customer['email'];
-            $_SESSION['customer_role'] = 'customer';
+                setAuthCookies($accessToken, $refreshRaw, time() + REFRESH_TOKEN_EXP_SECONDS);
+                $_SESSION['customer_id'] = $customer['user_id'];
+                $_SESSION['customer_name'] = $customer['full_name'];
+                $_SESSION['customer_email'] = $customer['email'];
+                $_SESSION['customer_role'] = 'customer';
 
-            $success = "Login successful!";
-            // Redirect back to index or return JSON for AJAX
-            if (isset($_POST['ajax'])) {
-                ob_clean(); // Clear any output
-                header('Content-Type: application/json');
-                echo json_encode(['success' => true, 'message' => 'Login successful']);
+                $success = "Login successful!";
+                // Redirect back to index or return JSON for AJAX
+                if (isset($_POST['ajax'])) {
+                    ob_clean(); // Clear any output
+                    header('Content-Type: application/json');
+                    echo json_encode(['success' => true, 'message' => 'Login successful']);
+                    exit;
+                }
+                header("Location: " . $BASE_URL . "index.php");
                 exit;
+            } catch (PDOException $e) {
+                // Most likely refresh_tokens table missing or DB mismatch
+                error_log('Customer login refresh token error: ' . $e->getMessage());
+                $error = "Login failed due to a server issue. Please try again later.";
+                if (isset($_POST['ajax'])) {
+                    ob_clean();
+                    header('Content-Type: application/json');
+                    echo json_encode(['success' => false, 'error' => $error]);
+                    exit;
+                }
             }
-            header("Location: " . $BASE_URL . "index.php");
-            exit;
         } else {
             $error = "Invalid email or password.";
             if (isset($_POST['ajax'])) {
