@@ -12,28 +12,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $admin = $stmt->fetch(PDO::FETCH_ASSOC);
 
     if ($admin && password_verify($password, $admin['password_hash'])) {
-        // Try JWT; if unavailable, fall back to session-only login
-        $accessToken = generateAccessToken($admin);
-
-        if ($accessToken === null) {
-            error_log('Admin login: JWT unavailable, using session-only login.');
-            $_SESSION['admin_id'] = $admin['user_id'];
-
-            // Log admin login activity even without tokens
-            $logStmt = $pdo->prepare("
-                INSERT INTO user_activity_logs (user_id, action)
-                VALUES (?, ?)
-            ");
-            $logStmt->execute([
-                $admin['user_id'],
-                'Admin login (session only) from IP ' . ($_SERVER['REMOTE_ADDR'] ?? 'unknown')
-            ]);
-
-            header("Location: ../../admin/index.php");
-            exit;
-        }
-
         try {
+            $accessToken = generateAccessToken($admin);
             $refreshRaw = generateRefreshTokenString();
             $refreshHash = hashToken($refreshRaw);
             $exp = date('Y-m-d H:i:s', time() + REFRESH_TOKEN_EXP_SECONDS);

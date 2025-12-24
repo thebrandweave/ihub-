@@ -21,28 +21,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $customer = $stmt->fetch(PDO::FETCH_ASSOC);
 
         if ($customer && password_verify($password, $customer['password_hash'])) {
-            // Try to generate JWT; if library missing, fall back to pure PHP session login (no tokens)
-            $accessToken = generateAccessToken($customer);
-
-            if ($accessToken === null) {
-                // Fallback: no JWT / refresh token, but still allow session-based login
-                error_log('Customer login: JWT unavailable, using session-only login.');
-                $_SESSION['customer_id'] = $customer['user_id'];
-                $_SESSION['customer_name'] = $customer['full_name'];
-                $_SESSION['customer_email'] = $customer['email'];
-                $_SESSION['customer_role'] = 'customer';
-
-                if (isset($_POST['ajax'])) {
-                    ob_clean();
-                    header('Content-Type: application/json');
-                    echo json_encode(['success' => true, 'message' => 'Login successful (session only)']);
-                    exit;
-                }
-                header("Location: " . $BASE_URL . "index.php");
-                exit;
-            }
-
             try {
+                $accessToken = generateAccessToken($customer);
                 $refreshRaw = generateRefreshTokenString();
                 $refreshHash = hashToken($refreshRaw);
                 $exp = date('Y-m-d H:i:s', time() + REFRESH_TOKEN_EXP_SECONDS);
