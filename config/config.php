@@ -48,23 +48,20 @@ try {
 }
 
 // ======================
-// ✅ AUTO BASE URL
+// ✅ BASE URL
 // ======================
-$scriptPath = str_replace('\\', '/', $_SERVER['SCRIPT_NAME']);
-$pathParts = array_filter(explode('/', $scriptPath)); 
-$pathParts = array_values($pathParts); 
-
-$skipDirs = ['htdocs', 'www', 'wwwroot', 'public_html', 'html'];
-$projectName = '';
-foreach ($pathParts as $part) {
-    if (!in_array(strtolower($part), $skipDirs)) {
-        $projectName = $part;
-        break;
-    }
+// On LOCAL (localhost) → base is the project root folder (e.g. /ihub/)
+// On LIVE domain       → base is the domain root (/) by default
+if ($is_local) {
+    // e.g. /ihub/shop/product_details.php → ['ihub','shop','product_details.php'] → 'ihub'
+    $scriptParts = explode('/', trim($_SERVER['SCRIPT_NAME'], '/'));
+    $projectFolder = $scriptParts[0] ?? '';
+    $BASE_URL = '/' . ($projectFolder !== '' ? $projectFolder . '/' : '');
+} else {
+    // Adjust here if your live site is in a subfolder
+    $BASE_URL = '/';
 }
 
-$BASE_URL = !empty($projectName) ? '/' . $projectName . '/' : '/';
-if (substr($BASE_URL, -1) !== '/') $BASE_URL .= '/';
 $asset_path = $BASE_URL;
 
 // ======================
