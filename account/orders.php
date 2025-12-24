@@ -2,7 +2,13 @@
 require_once __DIR__ . '/../auth/customer_auth.php';
 require_once __DIR__ . '/../config/config.php';
 
-$user_id = $_SESSION['customer_id'];
+// Ensure customer is logged in
+if (empty($customer_logged_in) || empty($customer_id)) {
+    header("Location: ../auth/customer_login.php");
+    exit;
+}
+
+$user_id = $customer_id;
 
 $stmt = $pdo->prepare("
   SELECT 

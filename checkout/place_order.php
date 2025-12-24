@@ -104,18 +104,7 @@ try {
     // 4️⃣ Clear cart
     $pdo->prepare("DELETE FROM cart WHERE user_id=?")->execute([$user_id]);
 
-    // 5️⃣ Create customer notification about the new order
-    $customerTitle = 'Order Confirmed';
-    $customerMessage = "Your order #{$order_number} has been confirmed. We'll notify you once it's shipped.";
-    $customerTargetUrl = $BASE_URL . "account/orders.php";
-    
-    $customerNotifStmt = $pdo->prepare("
-        INSERT INTO notifications (user_id, type, title, message, target_url)
-        VALUES (?, 'order_update', ?, ?, ?)
-    ");
-    $customerNotifStmt->execute([$user_id, $customerTitle, $customerMessage, $customerTargetUrl]);
-
-    // 6️⃣ Create admin notifications about the new order
+    // 5️⃣ Create admin notifications about the new order
     $admins = $pdo->query("SELECT user_id FROM users WHERE role = 'admin'")->fetchAll(PDO::FETCH_COLUMN);
     if ($admins) {
         $title = 'New order placed';
