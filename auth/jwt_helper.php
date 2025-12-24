@@ -1,7 +1,14 @@
 <?php
 // auth/jwt_helper.php
 require_once __DIR__ . '/../config/config.php';
-require_once __DIR__ . '/../admin/vendor/autoload.php'; // firebase/php-jwt
+
+// Safely load JWT library. On some live servers, a missing vendor file causes a fatal error (HTTP 500).
+$jwtAutoloadPath = __DIR__ . '/../admin/vendor/autoload.php';
+if (file_exists($jwtAutoloadPath)) {
+    require_once $jwtAutoloadPath; // firebase/php-jwt
+} else {
+    error_log('JWT autoload file missing at: ' . $jwtAutoloadPath);
+}
 use Firebase\JWT\JWT;
 use Firebase\JWT\Key;
 

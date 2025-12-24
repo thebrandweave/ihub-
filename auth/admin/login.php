@@ -12,30 +12,41 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $admin = $stmt->fetch(PDO::FETCH_ASSOC);
 
     if ($admin && password_verify($password, $admin['password_hash'])) {
-        $accessToken = generateAccessToken($admin);
-        $refreshRaw = generateRefreshTokenString();
-        $refreshHash = hashToken($refreshRaw);
-        $exp = date('Y-m-d H:i:s', time() + REFRESH_TOKEN_EXP_SECONDS);
+        try {
+            $accessToken = generateAccessToken($admin);
+            $refreshRaw = generateRefreshTokenString();
+            $refreshHash = hashToken($refreshRaw);
+            $exp = date('Y-m-d H:i:s', time() + REFRESH_TOKEN_EXP_SECONDS);
 
-        $pdo->prepare("INSERT INTO refresh_tokens (user_id, token_hash, user_agent, ip_address, expires_at)
-                     VALUES (?, ?, ?, ?, ?)")
-            ->execute([$admin['user_id'], $refreshHash, $_SERVER['HTTP_USER_AGENT'] ?? '', $_SERVER['REMOTE_ADDR'] ?? '', $exp]);
+            $pdo->prepare("INSERT INTO refresh_tokens (user_id, token_hash, user_agent, ip_address, expires_at)
+                         VALUES (?, ?, ?, ?, ?)")
+                ->execute([
+                    $admin['user_id'],
+                    $refreshHash,
+                    $_SERVER['HTTP_USER_AGENT'] ?? '',
+                    $_SERVER['REMOTE_ADDR'] ?? '',
+                    $exp
+                ]);
 
-        setAuthCookies($accessToken, $refreshRaw, time() + REFRESH_TOKEN_EXP_SECONDS);
-        $_SESSION['admin_id'] = $admin['user_id'];
+            setAuthCookies($accessToken, $refreshRaw, time() + REFRESH_TOKEN_EXP_SECONDS);
+            $_SESSION['admin_id'] = $admin['user_id'];
 
-        // Log admin login activity
-        $logStmt = $pdo->prepare("
-            INSERT INTO user_activity_logs (user_id, action)
-            VALUES (?, ?)
-        ");
-        $logStmt->execute([
-            $admin['user_id'],
-            'Admin login from IP ' . ($_SERVER['REMOTE_ADDR'] ?? 'unknown')
-        ]);
+            // Log admin login activity
+            $logStmt = $pdo->prepare("
+                INSERT INTO user_activity_logs (user_id, action)
+                VALUES (?, ?)
+            ");
+            $logStmt->execute([
+                $admin['user_id'],
+                'Admin login from IP ' . ($_SERVER['REMOTE_ADDR'] ?? 'unknown')
+            ]);
 
-        header("Location: ../../admin/index.php");
-        exit;
+            header("Location: ../../admin/index.php");
+            exit;
+        } catch (PDOException $e) {
+            error_log('Admin login refresh token error: ' . $e->getMessage());
+            $error = "Login failed due to a server issue. Please try again later.";
+        }
     } else {
         $error = "Invalid email or password.";
     }
