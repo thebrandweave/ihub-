@@ -42,3 +42,4 @@ if (isset($_COOKIE[session_name()])) {
 header("Location: login.php?msg=Logged out");
 exit;
 
+

@@ -7,29 +7,48 @@ if (session_status() === PHP_SESSION_NONE) {
 }
 
 // ======================
+// ENVIRONMENT DETECTION
+// ======================
+// Detect if running on localhost or a live server
+$is_local = in_array($_SERVER['REMOTE_ADDR'], ['127.0.0.1', '::1']);
+
+if ($is_local) {
+    // --- LOCAL SETTINGS ---
+    define('DB_HOST', 'localhost');
+    define('DB_PORT', 3306);
+    define('DB_NAME', 'ihub_electronics');
+    define('DB_USER', 'root');
+    define('DB_PASS', '');
+} else {
+    // --- LIVE SETTINGS ---
+    define('DB_HOST', 'localhost');
+    define('DB_PORT', 3306);
+    define('DB_NAME', 'u232955123_ihubmobiles');
+    define('DB_USER', 'u232955123_ihubmobiles');
+    define('DB_PASS', 'Ihubmobiles@2025');
+}
+
+// ======================
 // DATABASE CONNECTION
 // ======================
-$host  = "localhost";
-$user  = "root";
-$pass  = "";
-$dbname = "ihub_electronics";
-
 try {
+    $dsn = "mysql:host=" . DB_HOST . ";port=" . DB_PORT . ";dbname=" . DB_NAME . ";charset=utf8mb4";
     $pdo = new PDO(
-        "mysql:host=$host;dbname=$dbname;charset=utf8mb4",
-        $user,
-        $pass,
+        $dsn,
+        DB_USER,
+        DB_PASS,
         [
             PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
             PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC
         ]
     );
 } catch (PDOException $e) {
+    // On live, you might want to log this instead of 'die' for better security
     die("Database Connection Failed: " . $e->getMessage());
 }
 
 // ======================
-// ✅ AUTO BASE URL (BULLETPROOF METHOD)
+// ✅ AUTO BASE URL
 // ======================
 $scriptPath = str_replace('\\', '/', $_SERVER['SCRIPT_NAME']);
 $pathParts = array_filter(explode('/', $scriptPath)); 
@@ -49,15 +68,12 @@ if (substr($BASE_URL, -1) !== '/') $BASE_URL .= '/';
 $asset_path = $BASE_URL;
 
 // ======================
-// JWT SETTINGS
+// JWT & COOKIE SETTINGS
 // ======================
 const JWT_SECRET = 'replace_with_a_very_long_random_secret_string_!@#123';
 const ACCESS_TOKEN_EXP_SECONDS = 900;
-const REFRESH_TOKEN_EXP_SECONDS = 60 * 60 * 24 * 30;
+const REFRESH_TOKEN_EXP_SECONDS = 2592000; // 30 days
 
-// ======================
-// COOKIE SETTINGS
-// ======================
 define('COOKIE_SECURE', isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on');
 const COOKIE_HTTPONLY = true;
 const COOKIE_SAMESITE = 'Lax';
