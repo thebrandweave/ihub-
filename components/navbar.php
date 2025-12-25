@@ -225,10 +225,14 @@ $LOGO_URL = $SITE_URL . "assets/image/logo/ihub.png";
 
 .mobile-header {
   background: var(--brand-primary);
-  padding: 12px 16px;
+  padding: 10px 16px;
   display: flex;
   align-items: center;
   justify-content: space-between;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  position: sticky;
+  top: 0;
+  z-index: 1000;
 }
 
 .mobile-logo {
@@ -244,23 +248,36 @@ $LOGO_URL = $SITE_URL . "assets/image/logo/ihub.png";
 }
 
 .mobile-search {
-  background: var(--brand-primary-dark);
-  padding: 12px;
+  background: #fff;
+  padding: 10px 12px;
+  border-bottom: 1px solid #e0e0e0;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+}
+
+.mobile-search .form-control {
+  border: 1px solid #e0e0e0;
+  border-radius: 4px;
+  font-size: 14px;
+  padding: 8px 12px;
 }
 
 .mobile-search .form-control:focus {
   border-color: var(--brand-primary);
-  box-shadow: 0 0 0 0.2rem rgba(227, 0, 14, 0.25);
+  box-shadow: 0 0 0 0.2rem rgba(227, 0, 14, 0.15);
+  outline: none;
 }
 
 .mobile-search .btn-dark {
-  background-color: #000 !important;
-  border-color: #000 !important;
+  background-color: var(--brand-primary) !important;
+  border-color: var(--brand-primary) !important;
+  border-radius: 4px;
+  font-weight: 600;
+  padding: 8px 20px;
 }
 
 .mobile-search .btn-dark:hover {
-  background-color: #333 !important;
-  border-color: #333 !important;
+  background-color: var(--brand-primary-dark) !important;
+  border-color: var(--brand-primary-dark) !important;
 }
 
 .offcanvas-custom {
@@ -274,10 +291,44 @@ $LOGO_URL = $SITE_URL . "assets/image/logo/ihub.png";
 }
 
 .menu-item {
-  font-size:18px;
-  padding:12px 0;
+  font-size:16px;
+  padding:14px 0;
   border-bottom:1px solid #f2f2f2;
   cursor:pointer;
+  transition: background-color 0.2s ease;
+}
+
+.menu-item:hover {
+  background-color: #f8f9fa;
+  margin-left: -12px;
+  margin-right: -12px;
+  padding-left: 12px;
+  padding-right: 12px;
+}
+
+.menu-item a {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  color: #212529;
+  text-decoration: none;
+}
+
+.menu-item a:hover {
+  color: var(--brand-primary);
+}
+
+.menu-section-header {
+  font-size: 11px;
+  letter-spacing: 0.5px;
+  color: #6c757d;
+  font-weight: 700;
+  text-transform: uppercase;
+  padding: 8px 12px;
+  background-color: #f8f9fa;
+  border-top: 1px solid #e9ecef;
+  border-bottom: 1px solid #e9ecef;
+  margin-top: 8px;
 }
 }
 
@@ -472,6 +523,68 @@ $LOGO_URL = $SITE_URL . "assets/image/logo/ihub.png";
     top: 0;
     right: 0;
 }
+
+
+
+
+/* Container adjustment */
+.bottom-nav .container {
+    padding: 0 10px;
+}
+
+/* Hide scrollbar but keep functionality */
+.nav-category-scroll {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+}
+.nav-category-scroll::-webkit-scrollbar {
+    display: none;
+}
+
+/* Scroller Button Design */
+.cat-nav-btn {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 32px;
+    height: 32px;
+    background: rgba(255, 255, 255, 0.9);
+    border: 1px solid #e2e8f0;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    color: #1e293b;
+}
+
+.cat-nav-btn:hover {
+    background: var(--brand-primary);
+    color: #ffffff;
+    border-color: var(--brand-primary);
+    box-shadow: 0 10px 15px -3px rgba(13, 110, 253, 0.3);
+}
+
+.cat-nav-btn.left {
+    left: -5px;
+}
+
+.cat-nav-btn.right {
+    right: -5px;
+}
+
+/* Mobile: Hide buttons to allow natural thumb swiping */
+@media (max-width: 768px) {
+    .cat-nav-btn {
+        display: none !important;
+    }
+    .bottom-nav .container {
+        padding: 0 15px;
+    }
+}
 </style>
 
 
@@ -485,10 +598,18 @@ $LOGO_URL = $SITE_URL . "assets/image/logo/ihub.png";
   <span class="text-white fw-bold">iHub Electronics</span>
   </a>
 
-
-  <div class="position-relative">
-    <i class="bi bi-bag mh-icon" data-bs-toggle="offcanvas" data-bs-target="#cartDrawer"></i>
-    <span class="badge-dot bg-light text-dark position-absolute top-0 start-100 translate-middle p-1 cart-count">0</span>
+  <div class="d-flex align-items-center gap-3">
+    <?php if (!empty($customer_logged_in)): ?>
+      <div data-bs-toggle="offcanvas" data-bs-target="#wishlistDrawer" class="position-relative">
+        <i class="bi bi-heart mh-icon"></i>
+        <span class="badge-dot bg-light text-dark wishlist-count"></span>
+      </div>
+    <?php endif; ?>
+    
+    <div class="position-relative">
+      <i class="bi bi-bag mh-icon" data-bs-toggle="offcanvas" data-bs-target="#cartDrawer"></i>
+      <span class="badge-dot bg-light text-dark cart-count"></span>
+    </div>
   </div>
 
 </div>
@@ -503,22 +624,55 @@ $LOGO_URL = $SITE_URL . "assets/image/logo/ihub.png";
 <!-- MOBILE MENU -->
 <div class="offcanvas offcanvas-start offcanvas-custom" id="mobileMenu">
   <div class="offcanvas-header">
-    <h5 class="mb-0">MENU</h5>
-    <button class="btn text-white" data-bs-dismiss="offcanvas">
+    <h5 class="mb-0 fw-bold">Menu</h5>
+    <button class="btn text-white" data-bs-dismiss="offcanvas" aria-label="Close">
       <i class="bi bi-x-lg"></i>
     </button>
   </div>
 
-  <div class="offcanvas-body">
+  <div class="offcanvas-body p-0">
+    <?php if (!empty($customer_logged_in)): ?>
+      <div class="p-3 bg-light border-bottom">
+        <div class="d-flex align-items-center gap-3">
+          <div class="rounded-circle bg-primary d-flex align-items-center justify-content-center text-white" style="width: 50px; height: 50px;">
+            <i class="bi bi-person fs-4"></i>
+          </div>
+          <div>
+            <div class="fw-bold"><?= htmlspecialchars($customer_name ?? 'Customer') ?></div>
+            <small class="text-muted">View Profile</small>
+          </div>
+        </div>
+      </div>
+    <?php endif; ?>
 
-    <div class="menu-item" onclick="location.href='<?= $SITE_URL ?>shop/'">Shop</div>
-    <div class="menu-item" onclick="location.href='<?= $SITE_URL ?>categories/'">Categories</div>
-    <div class="menu-item" onclick="location.href='<?= $SITE_URL ?>about/'">About</div>
-    <div class="menu-item" onclick="location.href='<?= $SITE_URL ?>contact/'">Contact</div>
+    <div class="mt-2">
+      <!-- Quick Links -->
+      <div class="px-3 py-2 bg-light border-bottom">
+        <small class="text-muted text-uppercase fw-bold" style="font-size: 11px; letter-spacing: 0.5px;">Quick Links</small>
+      </div>
+      
+      <div class="menu-item">
+        <a href="<?= $SITE_URL ?>shop/" class="text-decoration-none text-dark">
+          <i class="bi bi-shop me-2"></i>Shop All Products
+        </a>
+      </div>
+      <div class="menu-item">
+        <a href="<?= $SITE_URL ?>contact/" class="text-decoration-none text-dark">
+          <i class="bi bi-headset me-2"></i>Help & Support
+        </a>
+      </div>
+      <div class="menu-item">
+        <a href="<?= $SITE_URL ?>about/" class="text-decoration-none text-dark">
+          <i class="bi bi-info-circle me-2"></i>About Us
+        </a>
+      </div>
 
-    <div class="mt-4">
       <?php if (!empty($customer_logged_in)): ?>
-        <div class="menu-item fw-bold"><?= htmlspecialchars($customer_name ?? 'Customer') ?></div>
+        <!-- Account Section -->
+        <div class="px-3 py-2 bg-light border-top border-bottom mt-2">
+          <small class="text-muted text-uppercase fw-bold" style="font-size: 11px; letter-spacing: 0.5px;">My Account</small>
+        </div>
+        
         <div class="menu-item">
           <a href="<?= $SITE_URL ?>account/" class="text-decoration-none text-dark">
             <i class="bi bi-person-circle me-2"></i>My Account
@@ -544,14 +698,19 @@ $LOGO_URL = $SITE_URL . "assets/image/logo/ihub.png";
             <i class="bi bi-shield-lock me-2"></i>Change Password
           </a>
         </div>
-        <div class="menu-item">
+        <div class="menu-item border-0">
           <a href="<?= $SITE_URL ?>auth/customer_logout.php" class="text-decoration-none text-danger">
             <i class="bi bi-box-arrow-right me-2"></i>Logout
           </a>
         </div>
       <?php else: ?>
-        <div class="menu-item" data-bs-toggle="modal" data-bs-target="#loginModal">
-          Sign in / Register
+        <!-- Login Section -->
+        <div class="px-3 py-2 bg-light border-top border-bottom mt-2">
+          <small class="text-muted text-uppercase fw-bold" style="font-size: 11px; letter-spacing: 0.5px;">Account</small>
+        </div>
+        
+        <div class="menu-item border-0" data-bs-toggle="modal" data-bs-target="#loginModal">
+          <i class="bi bi-box-arrow-in-right me-2"></i>Sign in / Register
         </div>
       <?php endif; ?>
     </div>
@@ -659,8 +818,15 @@ $LOGO_URL = $SITE_URL . "assets/image/logo/ihub.png";
   </div>
 
   <div class="bg-white border-top shadow-sm bottom-nav">
-    <div class="container">
-        <div class="nav-category-scroll d-flex align-items-center py-2 gap-3 overflow-x-auto">
+    <div class="container position-relative">
+        <button class="cat-nav-btn left" onclick="navSideScroll('navCategoryRow', 'left')">
+            <i class="bi bi-chevron-left"></i>
+        </button>
+        <button class="cat-nav-btn right" onclick="navSideScroll('navCategoryRow', 'right')">
+            <i class="bi bi-chevron-right"></i>
+        </button>
+
+        <div class="nav-category-scroll d-flex align-items-center py-2 gap-3 overflow-x-auto" id="navCategoryRow">
             <?php foreach ($navCategories as $cat): ?>
                 <a href="<?= $SITE_URL ?>shop/?category=<?= $cat['category_id'] ?>" class="nav-cat-circle-item text-decoration-none text-center">
                     <div class="nav-cat-img-wrapper">
@@ -677,16 +843,20 @@ $LOGO_URL = $SITE_URL . "assets/image/logo/ihub.png";
                     <span class="nav-cat-label"><?= htmlspecialchars($cat['name']) ?></span>
                 </a>
             <?php endforeach; ?>
-            
-            <a href="<?= $SITE_URL ?>categories/" class="nav-cat-circle-item text-decoration-none text-center">
-                <div class="nav-cat-img-wrapper bg-light">
-                    <i class="bi bi-arrow-right"></i>
-                </div>
-                <span class="nav-cat-label">All</span>
-            </a>
         </div>
     </div>
 </div>
+
+<script>
+function navSideScroll(elementId, direction) {
+    const container = document.getElementById(elementId);
+    const scrollAmount = 250; 
+    container.scrollBy({ 
+        left: direction === 'left' ? -scrollAmount : scrollAmount, 
+        behavior: 'smooth' 
+    });
+}
+</script>
 </nav>
 
 
@@ -702,6 +872,7 @@ $LOGO_URL = $SITE_URL . "assets/image/logo/ihub.png";
       <div class="modal-body">
         <form id="loginForm">
           <div id="loginError" class="alert alert-danger d-none mb-3"></div>
+          <input type="hidden" name="return" id="loginReturnUrl" value="">
           <input type="email" name="email" class="form-control mb-3" placeholder="Email" required>
           <input type="password" name="password" class="form-control mb-3" placeholder="Password" required>
           <button type="submit" class="btn btn-primary w-100">Login</button>
@@ -1596,6 +1767,28 @@ document.addEventListener("DOMContentLoaded", () => {
 
   const form = document.getElementById("loginForm");
   const errorBox = document.getElementById("loginError");
+  const returnUrlInput = document.getElementById("loginReturnUrl");
+  const loginModal = document.getElementById("loginModal");
+
+  // Capture return URL from query parameters
+  const urlParams = new URLSearchParams(window.location.search);
+  const returnUrl = urlParams.get('return');
+  if (returnUrl && returnUrlInput) {
+    returnUrlInput.value = decodeURIComponent(returnUrl);
+  }
+
+  // Also capture return URL when modal is shown (for links that open modal)
+  if (loginModal) {
+    loginModal.addEventListener('show.bs.modal', function (event) {
+      // Check if the trigger has a data-return attribute
+      const trigger = event.relatedTarget;
+      if (trigger && trigger.dataset.return && returnUrlInput) {
+        returnUrlInput.value = trigger.dataset.return;
+      } else if (!returnUrlInput.value && returnUrl) {
+        returnUrlInput.value = decodeURIComponent(returnUrl);
+      }
+    });
+  }
 
   if (form) {
     form.addEventListener("submit", function (e) {
@@ -1634,7 +1827,20 @@ document.addEventListener("DOMContentLoaded", () => {
       .then(data => {
 
         if (data.success === true) {
-          location.reload();   // refresh to show logged-in navbar
+          // Close modal if open
+          const modal = bootstrap.Modal.getInstance(loginModal);
+          if (modal) {
+            modal.hide();
+          }
+          
+          // Redirect to return URL if provided, otherwise reload
+          if (data.redirect) {
+            window.location.href = data.redirect;
+          } else if (returnUrlInput && returnUrlInput.value) {
+            window.location.href = returnUrlInput.value;
+          } else {
+            location.reload();   // refresh to show logged-in navbar
+          }
         } else {
           if (errorBox) {
             errorBox.classList.remove("d-none");

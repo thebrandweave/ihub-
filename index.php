@@ -541,6 +541,161 @@ function getFinalPrice($price, $discount) {
 
 
 
+/* Horizontal Scroll Container */
+.trending-scroll-wrapper {
+    display: flex;
+    overflow-x: auto;
+    overflow-y: hidden;
+    scroll-behavior: smooth;
+    gap: 20px;
+    padding: 10px 5px 20px 5px;
+    -webkit-overflow-scrolling: touch; /* Smooth scroll on iOS */
+}
+
+/* Hide scrollbar for Chrome, Safari and Opera */
+.trending-scroll-wrapper::-webkit-scrollbar {
+    display: none;
+}
+
+/* Hide scrollbar for IE, Edge and Firefox */
+.trending-scroll-wrapper {
+    -ms-overflow-style: none;  /* IE and Edge */
+    scrollbar-width: none;  /* Firefox */
+}
+
+/* Ensure cards have a fixed width in the scroll row */
+.trending-scroll-wrapper .scroll-item {
+    flex: 0 0 auto;
+    width: 280px; /* Adjust based on your preferred card size */
+}
+
+@media (max-width: 768px) {
+    .trending-scroll-wrapper .scroll-item {
+        width: 200px; /* Slightly smaller on mobile */
+    }
+}
+
+
+/* Reuse the scroll row logic for Featured Products */
+.featured-scroll-row {
+    display: flex;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    overflow-y: hidden;
+    scroll-snap-type: x mandatory;
+    scroll-behavior: smooth;
+    -webkit-overflow-scrolling: touch;
+    gap: 1.5rem;
+    padding-bottom: 15px;
+}
+
+/* Specific scroll logic for Brands */
+.brand-scroll-row {
+    display: flex;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    overflow-y: hidden;
+    scroll-behavior: smooth;
+    -webkit-overflow-scrolling: touch;
+    gap: 2rem;
+    padding: 1rem 0;
+}
+
+/* Hide scrollbars for both */
+.featured-scroll-row::-webkit-scrollbar, 
+.brand-scroll-row::-webkit-scrollbar {
+    display: none;
+}
+.featured-scroll-row, .brand-scroll-row {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+}
+
+/* Item sizing */
+.featured-scroll-item {
+    flex: 0 0 280px;
+    scroll-snap-align: start;
+}
+
+.brand-scroll-item {
+    flex: 0 0 auto; /* Brands take natural width of the .brand-item */
+}
+
+@media (max-width: 768px) {
+    .featured-scroll-item {
+        flex: 0 0 75%; /* Show 75% of card on mobile */
+    }
+}
+
+
+/* Horizontal Scroll Logic */
+.trending-scroll-row {
+    display: flex;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    overflow-y: hidden;
+    scroll-snap-type: x mandatory; /* Makes it snap into place on mobile */
+    scroll-behavior: smooth;
+    -webkit-overflow-scrolling: touch;
+    gap: 1.5rem;
+    padding-bottom: 15px; /* Space for the scrollbar if visible */
+}
+
+/* Hide scrollbar for a cleaner look */
+.trending-scroll-row::-webkit-scrollbar {
+    display: none;
+}
+.trending-scroll-row {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+}
+
+/* Fixed width for cards in the scroll row */
+.trending-scroll-item {
+    flex: 0 0 280px; /* Desktop width */
+    scroll-snap-align: start;
+}
+
+/* Responsive adjustment for Mobile */
+@media (max-width: 768px) {
+    .trending-scroll-item {
+        flex: 0 0 75%; /* On mobile, show 75% of a card so the next one peaks out */
+    }
+}
+
+
+/* Popular Products Scroll Logic */
+.popular-scroll-row {
+    display: flex;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    overflow-y: hidden;
+    scroll-snap-type: x mandatory;
+    scroll-behavior: smooth;
+    -webkit-overflow-scrolling: touch;
+    gap: 1.5rem;
+    padding-bottom: 15px;
+}
+
+.popular-scroll-row::-webkit-scrollbar {
+    display: none;
+}
+
+.popular-scroll-row {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+}
+
+.popular-scroll-item {
+    flex: 0 0 280px;
+    scroll-snap-align: start;
+}
+
+@media (max-width: 768px) {
+    .popular-scroll-item {
+        flex: 0 0 75%; /* Matches the "peek" effect on mobile */
+    }
+}
   </style>
 </head>
 <body>
@@ -637,14 +792,21 @@ function getFinalPrice($price, $discount) {
 
 
 
-
 <section class="py-5 container-fluid">
   <div class="container">
     <div class="d-flex justify-content-between align-items-center mb-4">
       <h2 class="fw-bold mb-0">Trending Electronics</h2>
-      <a href="<?= $BASE_URL ?>shop/" class="text-primary text-decoration-none fw-semibold">View All <i class="bi bi-arrow-right"></i></a>
+      <div class="d-flex align-items-center gap-2">
+          <button class="btn btn-sm btn-outline-dark rounded-circle d-none d-md-block" onclick="document.getElementById('trendingRow').scrollBy({left: -300, behavior: 'smooth'})">
+              <i class="bi bi-chevron-left"></i>
+          </button>
+          <button class="btn btn-sm btn-outline-dark rounded-circle d-none d-md-block" onclick="document.getElementById('trendingRow').scrollBy({left: 300, behavior: 'smooth'})">
+              <i class="bi bi-chevron-right"></i>
+          </button>
+      </div>
     </div>
-    <div class="row g-4">
+
+    <div class="trending-scroll-row" id="trendingRow">
       <?php foreach ($trendingProducts as $product): ?>
         <?php
           $finalPrice = getFinalPrice($product['price'], $product['discount'] ?? 0);
@@ -652,85 +814,8 @@ function getFinalPrice($price, $discount) {
           $wishlistIconClasses = $isWishlisted ? 'bi bi-heart-fill' : 'bi bi-heart';
           $wishlistActiveClass = $isWishlisted ? 'wishlist-active' : '';
         ?>
-        <div class="col-6 col-md-3">
-          <div class="product-card p-3 h-100"> <?php if (($product['discount'] ?? 0) > 0): ?>
-              <span class="badge-sale">-<?= number_format($product['discount'], 0) ?>%</span>
-            <?php endif; ?>
-
-            <div class="image-wrapper">
-              <a href="<?= $BASE_URL ?>shop/product_details.php?id=<?= $product['product_id'] ?>">
-                <img src="<?= htmlspecialchars(getProductImage($product)) ?>" alt="<?= htmlspecialchars($product['name']) ?>">
-              </a>
-              
-              <div class="overlay-actions">
-                  <?php if ($customer_logged_in): ?>
-                    <button class="overlay-btn" title="Add to Cart"
-                            onclick="event.stopPropagation(); addToCart(<?= $product['product_id'] ?>,'<?= addslashes($product['name']) ?>',<?= $finalPrice ?>,'<?= htmlspecialchars(getProductImage($product)) ?>')">
-                        <i class="bi bi-cart-plus"></i>
-                    </button>
-                    <button class="overlay-btn wishlist-heart <?= $wishlistActiveClass ?>" 
-                            title="Add to Wishlist"
-                            data-id="<?= $product['product_id'] ?>"
-                            onclick="event.stopPropagation(); toggleWishlist(this)">
-                        <i class="<?= $wishlistIconClasses ?>"></i>
-                    </button>
-                  <?php else: ?>
-                    <button class="overlay-btn" title="Add to Cart" data-bs-toggle="modal" data-bs-target="#loginModal" onclick="event.stopPropagation();">
-                        <i class="bi bi-cart-plus"></i>
-                    </button>
-                    <button class="overlay-btn text-danger" title="Add to Wishlist" data-bs-toggle="modal" data-bs-target="#loginModal" onclick="event.stopPropagation();">
-                        <i class="bi bi-heart"></i>
-                    </button>
-                  <?php endif; ?>
-              </div>
-            </div>
-
-            <div class="d-flex justify-content-between align-items-center small mb-1">
-              <span class="category-label text-uppercase"><?= htmlspecialchars($product['category_name'] ?? 'Electronics') ?></span>
-              <span class="text-warning">
-                  <i class="bi bi-star-fill"></i> 
-                  <?= number_format($product['avg_rating'], 1) ?> 
-                  <span class="text-secondary">(<?= $product['total_reviews'] ?>)</span>
-              </span>
-            </div>
-
-            <h3 class="product-title mb-2">
-              <a href="<?= $BASE_URL ?>shop/product_details.php?id=<?= $product['product_id'] ?>" class="text-decoration-none text-reset">
-                <?= htmlspecialchars($product['name']) ?>
-              </a>
-            </h3>
-
-            <div class="price-wrapper mb-3">
-              <span class="current-price">₹<?= number_format($finalPrice, 2) ?></span>
-              <?php if (($product['discount'] ?? 0) > 0): ?>
-                <span class="old-price">₹<?= number_format($product['price'], 2) ?></span>
-              <?php endif; ?>
-            </div>
-            
-          </div>
-        </div>
-      <?php endforeach; ?>
-    </div>
-  </div>
-</section>
-
-<?php if (!empty($featuredProducts)): ?>
-<section class="py-5 container-fluid">
-  <div class="container">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2 class="fw-bold mb-0">Featured Selections</h2>
-        <a href="<?= $BASE_URL ?>shop/" class="text-primary text-decoration-none fw-semibold">View All <i class="bi bi-arrow-right"></i></a>
-    </div>
-    <div class="row g-4">
-      <?php foreach ($featuredProducts as $product): ?>
-        <?php
-          $finalPrice = getFinalPrice($product['price'], $product['discount'] ?? 0);
-          $isWishlisted = !empty($wishlistProductMap[$product['product_id']]);
-          $wishlistIconClasses = $isWishlisted ? 'bi bi-heart-fill' : 'bi bi-heart';
-          $wishlistActiveClass = $isWishlisted ? 'wishlist-active' : '';
-        ?>
-        <div class="col-6 col-md-3">
-          <div class="product-card bg-white p-3 h-100">
+        <div class="trending-scroll-item">
+          <div class="product-card p-3 h-100 bg-white"> 
             <?php if (($product['discount'] ?? 0) > 0): ?>
               <span class="badge-sale">-<?= number_format($product['discount'], 0) ?>%</span>
             <?php endif; ?>
@@ -783,6 +868,65 @@ function getFinalPrice($price, $discount) {
               <?php if (($product['discount'] ?? 0) > 0): ?>
                 <span class="old-price">₹<?= number_format($product['price'], 2) ?></span>
               <?php endif; ?>
+            </div>
+          </div>
+        </div>
+      <?php endforeach; ?>
+    </div>
+  </div>
+</section>
+
+<?php if (!empty($featuredProducts)): ?>
+<section class="py-5 container-fluid">
+  <div class="container">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="fw-bold mb-0">Featured Selections</h2>
+        <div class="d-flex align-items-center gap-2">
+            <button class="btn btn-sm btn-outline-dark rounded-circle d-none d-md-block" onclick="document.getElementById('featuredRow').scrollBy({left: -300, behavior: 'smooth'})">
+                <i class="bi bi-chevron-left"></i>
+            </button>
+            <button class="btn btn-sm btn-outline-dark rounded-circle d-none d-md-block" onclick="document.getElementById('featuredRow').scrollBy({left: 300, behavior: 'smooth'})">
+                <i class="bi bi-chevron-right"></i>
+            </button>
+        </div>
+    </div>
+    
+    <div class="featured-scroll-row" id="featuredRow">
+      <?php foreach ($featuredProducts as $product): ?>
+        <?php
+          $finalPrice = getFinalPrice($product['price'], $product['discount'] ?? 0);
+          $isWishlisted = !empty($wishlistProductMap[$product['product_id']]);
+          $wishlistIconClasses = $isWishlisted ? 'bi bi-heart-fill' : 'bi bi-heart';
+          $wishlistActiveClass = $isWishlisted ? 'wishlist-active' : '';
+        ?>
+        <div class="featured-scroll-item">
+          <div class="product-card bg-white p-3 h-100">
+            <?php if (($product['discount'] ?? 0) > 0): ?>
+              <span class="badge-sale">-<?= number_format($product['discount'], 0) ?>%</span>
+            <?php endif; ?>
+
+            <div class="image-wrapper">
+              <a href="<?= $BASE_URL ?>shop/product_details.php?id=<?= $product['product_id'] ?>">
+                <img src="<?= htmlspecialchars(getProductImage($product)) ?>" alt="<?= htmlspecialchars($product['name']) ?>">
+              </a>
+              <div class="overlay-actions">
+                  <?php if ($customer_logged_in): ?>
+                    <button class="overlay-btn" onclick="event.stopPropagation(); addToCart(<?= $product['product_id'] ?>,'<?= addslashes($product['name']) ?>',<?= $finalPrice ?>,'<?= htmlspecialchars(getProductImage($product)) ?>')"><i class="bi bi-cart-plus"></i></button>
+                    <button class="overlay-btn wishlist-heart <?= $wishlistActiveClass ?>" onclick="event.stopPropagation(); toggleWishlist(this)" data-id="<?= $product['product_id'] ?>"><i class="<?= $wishlistIconClasses ?>"></i></button>
+                  <?php else: ?>
+                    <button class="overlay-btn" data-bs-toggle="modal" data-bs-target="#loginModal"><i class="bi bi-cart-plus"></i></button>
+                  <?php endif; ?>
+              </div>
+            </div>
+
+            <div class="d-flex justify-content-between align-items-center small mb-1">
+              <span class="category-label text-uppercase"><?= htmlspecialchars($product['category_name'] ?? 'Electronics') ?></span>
+              <span class="text-warning"><i class="bi bi-star-fill"></i> <?= number_format($product['avg_rating'], 1) ?></span>
+            </div>
+
+            <h3 class="product-title mb-2"><?= htmlspecialchars($product['name']) ?></h3>
+            <div class="price-wrapper mb-3">
+              <span class="current-price">₹<?= number_format($finalPrice, 2) ?></span>
             </div>
           </div>
         </div>
@@ -812,12 +956,19 @@ function getFinalPrice($price, $discount) {
 
 <section id="products" class="py-5 container-fluid">
   <div class="container">
-    <div class="d-flex justify-content-between mb-4">
-      <h2 class="fw-bold">Popular Products</h2>
-      <a href="<?= $BASE_URL ?>shop/" class="text-primary text-decoration-none fw-semibold">View All <i class="bi bi-arrow-right"></i></a>
+    <div class="d-flex justify-content-between align-items-center mb-4">
+      <h2 class="fw-bold mb-0">Popular Products</h2>
+      <div class="d-flex align-items-center gap-2">
+          <button class="btn btn-sm btn-outline-dark rounded-circle d-none d-md-block" onclick="document.getElementById('popularRow').scrollBy({left: -300, behavior: 'smooth'})">
+              <i class="bi bi-chevron-left"></i>
+          </button>
+          <button class="btn btn-sm btn-outline-dark rounded-circle d-none d-md-block" onclick="document.getElementById('popularRow').scrollBy({left: 300, behavior: 'smooth'})">
+              <i class="bi bi-chevron-right"></i>
+          </button>
+      </div>
     </div>
 
-    <div class="row g-4">
+    <div class="popular-scroll-row" id="popularRow">
       <?php foreach ($popularProducts as $product): ?>
         <?php
           $finalPrice = getFinalPrice($product['price'], $product['discount'] ?? 0);
@@ -825,7 +976,7 @@ function getFinalPrice($price, $discount) {
           $wishlistIconClasses = $isWishlisted ? 'bi bi-heart-fill' : 'bi bi-heart';
           $wishlistActiveClass = $isWishlisted ? 'wishlist-active' : '';
         ?>
-        <div class="col-6 col-md-3">
+        <div class="popular-scroll-item">
           <div class="product-card bg-white p-3 h-100">
             <?php if (($product['discount'] ?? 0) > 0): ?>
               <span class="badge-sale">-<?= number_format($product['discount'], 0) ?>%</span>
@@ -836,31 +987,23 @@ function getFinalPrice($price, $discount) {
                 <img src="<?= htmlspecialchars(getProductImage($product)) ?>" alt="<?= htmlspecialchars($product['name']) ?>">
               </a>
               
-               <div class="overlay-actions">
+              <div class="overlay-actions">
                   <?php if ($customer_logged_in): ?>
                     <button class="overlay-btn" title="Add to Cart"
-                            onclick="event.stopPropagation(); addToCart(
-                              <?= $product['product_id'] ?>,
-                              '<?= addslashes($product['name']) ?>',
-                              <?= $finalPrice ?>,
-                              '<?= htmlspecialchars(getProductImage($product)) ?>'
-                            )">
+                            onclick="event.stopPropagation(); addToCart(<?= $product['product_id'] ?>,'<?= addslashes($product['name']) ?>',<?= $finalPrice ?>,'<?= htmlspecialchars(getProductImage($product)) ?>')">
                         <i class="bi bi-cart-plus"></i>
                     </button>
                     <button class="overlay-btn wishlist-heart <?= $wishlistActiveClass ?>" 
                             title="Add to Wishlist"
                             data-id="<?= $product['product_id'] ?>"
-                            data-name="<?= htmlspecialchars($product['name']) ?>"
-                            data-price="<?= $finalPrice ?>"
-                            data-image="<?= htmlspecialchars(getProductImage($product)) ?>"
                             onclick="event.stopPropagation(); toggleWishlist(this)">
                         <i class="<?= $wishlistIconClasses ?>"></i>
                     </button>
                   <?php else: ?>
-                    <button class="overlay-btn" title="Add to Cart" data-bs-toggle="modal" data-bs-target="#loginModal" onclick="event.stopPropagation();">
+                    <button class="overlay-btn" title="Add to Cart" data-bs-toggle="modal" data-bs-target="#loginModal">
                         <i class="bi bi-cart-plus"></i>
                     </button>
-                    <button class="overlay-btn text-danger" title="Add to Wishlist" data-bs-toggle="modal" data-bs-target="#loginModal" onclick="event.stopPropagation();">
+                    <button class="overlay-btn text-danger" title="Add to Wishlist" data-bs-toggle="modal" data-bs-target="#loginModal">
                         <i class="bi bi-heart"></i>
                     </button>
                   <?php endif; ?>
@@ -888,41 +1031,12 @@ function getFinalPrice($price, $discount) {
                 <span class="old-price">₹<?= number_format($product['price'], 2) ?></span>
               <?php endif; ?>
             </div>
-
           </div>
         </div>
       <?php endforeach; ?>
     </div>
-
-    </section>
-
-    <section id="brand" class="py-5 bg-white container-fluid">
-  <div class="container">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-      <h2 class="fw-bold">Trending Brands</h2>
-      <a href="<?= $BASE_URL ?>shop/" class="text-primary text-decoration-none fw-semibold">
-        View All <i class="bi bi-arrow-right"></i>
-      </a>
-    </div>
-
-    <div class="brand-wrapper">
-      <?php foreach ($trendingBrands as $brand): ?>
-        <a href="<?= $BASE_URL ?>shop/?brand=<?= $brand['brand_id'] ?>" class="brand-item">
-          <div class="brand-img-box">
-            <?php if (!empty($brand['logo'])): ?>
-              <img src="<?= $BASE_URL ?>uploads/brands/<?= htmlspecialchars($brand['logo']) ?>" 
-                   alt="<?= htmlspecialchars($brand['name']) ?>">
-            <?php else: ?>
-              <div class="text-primary fw-bold"><?= substr(htmlspecialchars($brand['name']), 0, 1) ?></div>
-            <?php endif; ?>
-          </div>
-          <span><?= htmlspecialchars($brand['name']) ?></span>
-        </a>
-      <?php endforeach; ?>
-    </div>
   </div>
 </section>
-
 
 <?php include __DIR__ . "/components/newsletter.php"; ?>
 

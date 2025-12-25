@@ -1,5 +1,17 @@
 <?php
 require_once __DIR__ . '/../config/config.php';
+require_once __DIR__ . '/../auth/customer_auth.php';
+
+// Helper function to get protected link URL
+function getProtectedLink($url, $baseUrl) {
+    global $customer_logged_in;
+    if (!empty($customer_logged_in)) {
+        return $url;
+    }
+    // Redirect to login with return URL
+    $returnUrl = urlencode($url);
+    return $baseUrl . 'auth/customer_login.php?return=' . $returnUrl;
+}
 
 // --- 1. Fetch General Site Settings ---
 try {
@@ -71,8 +83,8 @@ function getSocialIcon($name) {
       <div class="col-lg-2 col-md-3 col-6">
         <h6 class="fw-bold mb-3">Account</h6>
         <ul class="list-unstyled small">
-          <li class="mb-2"><a href="<?= $BASE_URL ?>account/orders.php" class="text-decoration-none text-secondary">My Orders</a></li>
-          <li class="mb-2"><a href="<?= $BASE_URL ?>wishlist/" class="text-decoration-none text-secondary">Wishlist</a></li>
+          <li class="mb-2"><a href="<?= getProtectedLink($BASE_URL . 'account/orders.php', $BASE_URL) ?>" class="text-decoration-none text-secondary">My Orders</a></li>
+          <li class="mb-2"><a href="<?= getProtectedLink($BASE_URL . 'wishlist/', $BASE_URL) ?>" class="text-decoration-none text-secondary">Wishlist</a></li>
           <li class="mb-2"><a href="<?= $BASE_URL ?>cart/" class="text-decoration-none text-secondary">My Cart</a></li>
           <li class="mb-2"><a href="<?= $BASE_URL ?>contact/" class="text-decoration-none text-secondary">Support</a></li>
         </ul>
@@ -114,3 +126,43 @@ function getSocialIcon($name) {
     </a>
   </div>
 </footer>
+
+<script>
+// Intercept protected footer links - try modal first, fallback to login page
+document.addEventListener('DOMContentLoaded', function() {
+  // Find all footer links that go to login page
+  const footerLinks = document.querySelectorAll('footer a[href*="customer_login.php"]');
+  
+  footerLinks.forEach(function(link) {
+    link.addEventListener('click', function(e) {
+      // Only intercept if user is not logged in (check if link contains login URL)
+      if (this.href.includes('customer_login.php')) {
+        // Try to open modal if Bootstrap is available
+        if (typeof bootstrap !== 'undefined') {
+          const loginModal = document.getElementById('loginModal');
+          if (loginModal) {
+            e.preventDefault();
+            
+            // Extract return URL from the link
+            const url = new URL(this.href);
+            const returnUrl = url.searchParams.get('return');
+            
+            // Set return URL in hidden input
+            const returnUrlInput = document.getElementById('loginReturnUrl');
+            if (returnUrlInput && returnUrl) {
+              returnUrlInput.value = decodeURIComponent(returnUrl);
+            }
+            
+            // Open modal
+            const modal = new bootstrap.Modal(loginModal);
+            modal.show();
+            
+            return false;
+          }
+        }
+        // If modal not available, let the link work normally (redirects to login page)
+      }
+    });
+  });
+});
+</script>

@@ -154,323 +154,315 @@ $relatedProducts = $relatedStmt->fetchAll(PDO::FETCH_ASSOC);
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
 
     <style>
-        /* Shared Theme Variables */
-        :root {
-            --text-color: #1a1a1a;
-            --text-muted: #555;
-            --border-color: #e5e5e5;
-            --accent-color: #e3000e;
-        }
+    /* Shared Theme Variables */
+    :root {
+        --text-color: #1a1a1a;
+        --text-muted: #555;
+        --border-color: #e5e5e5;
+        --accent-color: #e3000e;
+        --card-radius: 12px;
+    }
 
-        body {
-            font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
-            color: var(--text-color);
-            background-color: #ffffff;
-        }
+    body {
+        font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+        color: var(--text-color);
+        background-color: #ffffff;
+    }
 
-        /* Breadcrumbs */
-        .breadcrumb-item a {
-            color: #888;
-            text-decoration: none;
-            font-size: 0.85rem;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-        .breadcrumb-item.active {
-            color: var(--text-color);
-            font-size: 0.85rem;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
+    /* --- Breadcrumbs --- */
+    .breadcrumb-item a {
+        color: #888;
+        text-decoration: none;
+        font-size: 0.85rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+    .breadcrumb-item.active {
+        color: var(--text-color);
+        font-size: 0.85rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
 
-        /* Image Gallery */
-        .main-image-container {
-            background-color: #f5f5f5;
-            border-radius: 8px;
-            overflow: hidden;
-            margin-bottom: 15px;
-            cursor: zoom-in;
-        }
-        
-        .main-image-container img {
-            width: 100%;
-            height: auto;
-            object-fit: contain;
-            transition: transform 0.3s ease;
-        }
+    /* --- Main Product Image Gallery --- */
+    .main-image-container {
+        background-color: #f8f9fa;
+        border-radius: 8px;
+        overflow: hidden;
+        margin-bottom: 15px;
+        height: 500px; /* Fixed height to match design */
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: zoom-in;
+        border: 1px solid var(--border-color);
+    }
+    
+    .main-image-container img {
+        width: 100% !important;
+        height: 100% !important;
+        object-fit: cover !important; /* Forces image to hide the gray background */
+        transition: transform 0.3s ease;
+    }
 
-        .thumbnail-strip {
-            display: flex;
-            gap: 10px;
-            overflow-x: auto;
-        }
+    .thumbnail-strip {
+        display: flex;
+        gap: 10px;
+        overflow-x: auto;
+        padding-bottom: 5px;
+    }
 
-        .thumb-btn {
-            width: 80px;
-            height: 80px;
-            border: 2px solid transparent;
-            border-radius: 6px;
-            background-color: #f5f5f5;
-            padding: 5px;
-            cursor: pointer;
-            transition: border-color 0.2s;
-        }
-        
-        .thumb-btn.active {
-            border-color: var(--text-color);
-        }
-        
-        .thumb-btn img {
-            width: 100%;
-            height: 100%;
-            object-fit: contain;
-            mix-blend-mode: multiply;
-        }
+    .thumb-btn {
+        width: 80px;
+        height: 80px;
+        border: 2px solid transparent;
+        border-radius: 6px;
+        background-color: #f5f5f5;
+        padding: 0; /* Set to 0 to allow image to cover edges */
+        cursor: pointer;
+        transition: border-color 0.2s;
+        overflow: hidden;
+        flex-shrink: 0;
+    }
+    
+    .thumb-btn.active {
+        border-color: var(--text-color);
+    }
+    
+    .thumb-btn img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover; /* Keeps thumbnails consistent with main image */
+    }
 
-        /* Product Info (Sticky Side) */
-        .product-info-sticky {
-            position: -webkit-sticky;
-            position: sticky;
-            top: 100px; /* Offset for navbar */
-        }
+    /* --- Product Info & Sticky Sidebar --- */
+    .product-info-sticky {
+        position: -webkit-sticky;
+        position: sticky;
+        top: 100px;
+    }
 
-        .product-category {
-            font-size: 0.8rem;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            color: #888;
-            margin-bottom: 0.5rem;
-        }
+    .product-category {
+        font-size: 0.8rem;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        color: #888;
+        margin-bottom: 0.5rem;
+    }
 
-        .product-title {
-            font-size: 2.5rem;
-            font-weight: 700;
-            line-height: 1.1;
-            margin-bottom: 1rem;
-        }
+    .product-title {
+        font-size: 2.5rem;
+        font-weight: 700;
+        line-height: 1.1;
+        margin-bottom: 1rem;
+    }
 
-        .price-area {
-            font-size: 1.25rem;
-            margin-bottom: 1.5rem;
-            font-weight: 500;
-        }
+    .price-area {
+        font-size: 1.25rem;
+        margin-bottom: 1.5rem;
+        font-weight: 500;
+    }
 
-        .text-sale { color: var(--accent-color); font-weight: 700; }
-        .text-strike { text-decoration: line-through; color: #999; font-size: 1rem; margin-left: 10px; }
+    .text-sale { color: var(--accent-color); font-weight: 700; }
+    .text-strike { text-decoration: line-through; color: #999; font-size: 1rem; margin-left: 10px; }
 
-        /* Quantity Selector */
-        .qty-container {
-            display: flex;
-            align-items: center;
-            border: 1px solid var(--text-color);
-            border-radius: 4px;
-            width: 140px;
-            height: 48px;
-            margin-right: 15px;
-        }
+    /* --- Quantity Selector --- */
+    .qty-container {
+        display: flex;
+        align-items: center;
+        border: 1px solid var(--text-color);
+        border-radius: 4px;
+        width: 140px;
+        height: 48px;
+        margin-right: 15px;
+    }
 
-        .qty-btn {
-            width: 40px;
-            height: 100%;
-            background: none;
-            border: none;
-            font-size: 1.2rem;
-            cursor: pointer;
-            color: var(--text-color);
-        }
+    .qty-btn {
+        width: 40px;
+        height: 100%;
+        background: none;
+        border: none;
+        font-size: 1.2rem;
+        cursor: pointer;
+        color: var(--text-color);
+    }
 
-        .qty-input {
-            width: 60px;
-            height: 100%;
-            border: none;
-            text-align: center;
-            font-size: 1rem;
-            font-weight: 600;
-            appearance: none;
-            -moz-appearance: textfield;
-        }
-        .qty-input:focus { outline: none; }
+    .qty-input {
+        width: 60px;
+        height: 100%;
+        border: none;
+        text-align: center;
+        font-size: 1rem;
+        font-weight: 600;
+        appearance: none;
+    }
+    .qty-input:focus { outline: none; }
 
-        /* Action Buttons */
-        .btn-add-cart {
-            background-color: transparent;
-            border: 1px solid var(--text-color);
-            color: var(--text-color);
-            height: 48px;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            transition: all 0.3s;
-        }
+    /* --- Buttons --- */
+    .btn-add-cart, .btn-buy-now {
+        height: 48px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        transition: all 0.3s;
+    }
+    .btn-add-cart {
+        background-color: transparent;
+        border: 1px solid var(--text-color);
+        color: var(--text-color);
+    }
+    .btn-add-cart:hover {
+        background-color: var(--text-color);
+        color: #fff;
+    }
+    .btn-buy-now {
+        background-color: var(--text-color);
+        color: #fff;
+        border: 1px solid var(--text-color);
+    }
+    .btn-buy-now:hover { opacity: 0.9; }
 
-        .btn-add-cart:hover {
-            background-color: var(--text-color);
-            color: #fff;
-        }
+    /* --- Accordion Customization --- */
+    .accordion-item { border: none; border-bottom: 1px solid #eee; }
+    .accordion-button {
+        background: none;
+        box-shadow: none;
+        font-weight: 600;
+        font-size: 0.9rem;
+        text-transform: uppercase;
+        padding: 1.2rem 0;
+        color: var(--text-color);
+    }
+    .accordion-button:not(.collapsed) {
+        color: var(--text-color);
+        background: none;
+        box-shadow: none;
+    }
+    .accordion-button:focus { box-shadow: none; }
+    .accordion-body {
+        padding: 0 0 1.5rem 0;
+        color: var(--text-muted);
+        line-height: 1.6;
+    }
 
-        .btn-buy-now {
-            background-color: var(--text-color);
-            color: #fff;
-            border: 1px solid var(--text-color);
-            height: 48px;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
+    /* --- Product Cards (Related Products Section) --- */
+    .product-card {
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        position: relative;
+        border: none !important;
+    }
 
-        .btn-buy-now:hover {
-            opacity: 0.9;
-        }
+    .product-card:hover { transform: translateY(-5px); }
 
-        /* Accordion Customization */
-        .accordion-item {
-            border: none;
-            border-bottom: 1px solid #eee;
-        }
-        
-        .accordion-button {
-            background: none;
-            box-shadow: none;
-            font-weight: 600;
-            font-size: 0.9rem;
-            text-transform: uppercase;
-            padding: 1.2rem 0;
-            color: var(--text-color);
-        }
+    .product-card .image-wrapper {
+        position: relative;
+        border-radius: var(--card-radius);
+        overflow: hidden;
+        background: #f5f7fb; /* The gray background to be covered */
+        padding-top: 100%; /* Forces square aspect ratio */
+        margin-bottom: 1rem;
+    }
 
-        .accordion-button:not(.collapsed) {
-            color: var(--text-color);
-            background: none;
-            box-shadow: none;
-        }
+    .product-card .image-wrapper a {
+        position: absolute;
+        top: 0; left: 0; width: 100%; height: 100%;
+        display: block; z-index: 1;
+    }
 
-        .accordion-button:focus { box-shadow: none; }
-        
-        .accordion-body {
-            padding: 0 0 1.5rem 0;
-            color: var(--text-muted);
-            line-height: 1.6;
-        }
+    .product-card .image-wrapper img {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100% !important;
+        height: 100% !important;
+        object-fit: cover !important; /* Ensures related images fill the card */
+        transition: transform 0.4s ease;
+    }
+
+    .product-card:hover .image-wrapper img { transform: scale(1.08); }
+
+    /* Card Components */
+    .overlay-actions {
+        position: absolute;
+        bottom: 20px;
+        left: 0; right: 0;
+        display: flex;
+        justify-content: center;
+        gap: 12px;
+        opacity: 0;
+        transform: translateY(20px);
+        transition: all 0.3s ease-in-out;
+        z-index: 5;
+    }
+    .product-card:hover .overlay-actions { opacity: 1; transform: translateY(0); }
+
+    .overlay-btn {
+        width: 45px; height: 45px; border-radius: 50%;
+        background: #fff; border: none;
+        display: flex; align-items: center; justify-content: center;
+        color: var(--text-color);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        transition: all 0.2s ease;
+        font-size: 1.25rem;
+        cursor: pointer;
+    }
+    .overlay-btn:hover { background: var(--text-color); color: #fff; transform: scale(1.1); }
+    .overlay-btn.wishlist-active { color: red; }
+    .overlay-btn.wishlist-active:hover { background: red; color: white; }
+
+    .badge-sale {
+        position: absolute;
+        top: 14px; left: 14px;
+        background: var(--text-color);
+        color: #fff;
+        font-size: 0.75rem;
+        padding: 4px 10px;
+        border-radius: 4px;
+        z-index: 2;
+        font-weight: 600;
+    }
+
+    .category-label { color: #94a3b8; text-transform: uppercase; font-size: 0.75rem; letter-spacing: 0.5px; }
+    .price-wrapper .current-price { font-weight: 700; color: var(--accent-color); font-size: 1.1rem; }
+    .price-wrapper .old-price { font-size: 0.95rem; color: #94a3b8; text-decoration: line-through; margin-left: 8px; }
+
+    /* --- Full View Modal --- */
+    .full-view-img { 
+        max-width: 100%; 
+        max-height: 90vh; 
+        object-fit: contain; /* Keeps full detail visible in modal without cropping */
+        box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        border-radius: 4px;
+    }
 
 
-
-        /* --- EXACT MATCH FROM INDEX.PHP --- */
-.product-card {
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
-    position: relative;
-    border: none !important; /* Remove the border if you want the clean look from index */
+    /* Custom Horizontal Scroll */
+.related-scroll-container {
+    scroll-behavior: smooth;
+    -webkit-overflow-scrolling: touch; /* Smooth scroll for iOS */
+    scrollbar-width: none; /* Firefox */
+    -ms-overflow-style: none;  /* IE and Edge */
 }
 
-.product-card:hover {
-    transform: translateY(-5px);
+.related-scroll-container::-webkit-scrollbar {
+    display: none; /* Hide scrollbar for Chrome, Safari, and Opera */
 }
 
-.product-card .image-wrapper {
-    position: relative;
-    border-radius: var(--card-radius);
-    overflow: hidden;
-    background: #f5f7fb;
-    padding-top: 100%;
-    margin-bottom: 1rem;
-}
-
-.product-card .image-wrapper a {
-    position: absolute;
-    top: 0;
-    left: 0;
+/* Ensure images in the scroll maintain aspect ratio */
+.related-product-item .image-wrapper img {
     width: 100%;
-    height: 100%;
-    display: block;
-    z-index: 1;
+    height: 200px;
+    object-fit: contain;
 }
 
-.product-card .image-wrapper img {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    transition: transform 0.4s ease;
+/* Mobile adjustments */
+@media (max-width: 768px) {
+    .related-product-item {
+        width: 220px !important; /* Smaller cards on mobile */
+        margin-right: 1rem !important;
+    }
 }
-
-.product-card:hover .image-wrapper img {
-    transform: scale(1.04);
-}
-
-.overlay-actions {
-    position: absolute;
-    bottom: 20px;
-    left: 0;
-    right: 0;
-    display: flex;
-    justify-content: center;
-    gap: 12px;
-    opacity: 0;
-    transform: translateY(20px);
-    transition: all 0.3s ease-in-out;
-    z-index: 5;
-}
-
-.product-card:hover .overlay-actions {
-    opacity: 1;
-    transform: translateY(0);
-}
-
-.overlay-btn {
-    width: 45px;
-    height: 45px;
-    border-radius: 50%;
-    background: #fff;
-    border: none;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: var(--text-color);
-    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-    transition: all 0.2s ease;
-    font-size: 1.25rem;
-    cursor: pointer;
-}
-
-.overlay-btn:hover {
-    background: var(--text-color);
-    color: #fff;
-    transform: scale(1.1);
-}
-
-.badge-sale {
-    position: absolute;
-    top: 14px;
-    left: 14px;
-    background: var(--text-color);
-    color: #fff;
-    font-size: 0.75rem;
-    padding: 4px 10px;
-    border-radius: 4px;
-    z-index: 2;
-    font-weight: 600;
-}
-
-.price-wrapper .current-price {
-    font-weight: 700;
-    color: var(--accent-color);
-    font-size: 1.1rem;
-}
-
-.price-wrapper .old-price {
-    font-size: 0.95rem;
-    color: #94a3b8;
-    text-decoration: line-through;
-    margin-left: 8px;
-}
-
-.overlay-btn.wishlist-active { color: red; }
-.overlay-btn.wishlist-active:hover { background: red; color: white; }
-.category-label { color: #94a3b8; text-transform: uppercase; font-size: 0.75rem; letter-spacing: 0.5px; }
-
-
-    </style>
+</style>
 </head>
 <body>
 
@@ -482,7 +474,7 @@ $relatedProducts = $relatedStmt->fetchAll(PDO::FETCH_ASSOC);
     <div class="row g-5">
         
         <div class="col-lg-7">
-            <div class="main-image-container">
+            <div class="main-image-container" onclick = "openFullView()" style = "cursor: zoom-in;" >
                 <img id="mainImage" src="<?= getImgUrl($images[0]['image_url']) ?>" alt="Product Image">
             </div>
 
@@ -562,22 +554,22 @@ $relatedProducts = $relatedStmt->fetchAll(PDO::FETCH_ASSOC);
                     </div>
 
                     <div class="d-grid gap-2">
-                        <?php if ($customer_logged_in): ?>
-                            <button type="button" class="btn btn-add-cart" onclick="addToCart()">
-                                Add to Cart
-                            </button>
-                            <button type="button" class="btn btn-buy-now">
-                                Buy it now
-                            </button>
-                        <?php else: ?>
-                            <button type="button" class="btn btn-add-cart" data-bs-toggle="modal" data-bs-target="#loginModal">
-                                Add to Cart
-                            </button>
-                            <button type="button" class="btn btn-buy-now" data-bs-toggle="modal" data-bs-target="#loginModal">
-                                Buy it now
-                            </button>
-                        <?php endif; ?>
-                    </div>
+    <?php if ($customer_logged_in): ?>
+        <button type="button" id="add-to-cart-btn" class="btn btn-add-cart" onclick="addToCart()">
+            Add to Cart
+        </button>
+        <button type="button" class="btn btn-buy-now">
+            Buy it now
+        </button>
+    <?php else: ?>
+        <button type="button" class="btn btn-add-cart" data-bs-toggle="modal" data-bs-target="#loginModal">
+            Add to Cart
+        </button>
+        <button type="button" class="btn btn-buy-now" data-bs-toggle="modal" data-bs-target="#loginModal">
+            Buy it now
+        </button>
+    <?php endif; ?>
+</div>
                 </form>
 
 
@@ -718,29 +710,38 @@ $relatedProducts = $relatedStmt->fetchAll(PDO::FETCH_ASSOC);
                 </div>
     </div>
 
-<div class="mt-5 pt-5">
-    <h3 class="fw-bold mb-4 text-start">You May Also Like</h3>
-    <div class="row g-4">
-        <?php if (!empty($relatedProducts)): ?>
+    <div class="mt-5 pt-5">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h3 class="fw-bold mb-0">You May Also Like</h3>
+        <div class="d-none d-md-flex gap-2">
+            <button class="btn btn-sm btn-outline-dark rounded-circle" onclick="document.getElementById('relatedScroll').scrollBy({left: -300, behavior: 'smooth'})">
+                <i class="bi bi-chevron-left"></i>
+            </button>
+            <button class="btn btn-sm btn-outline-dark rounded-circle" onclick="document.getElementById('relatedScroll').scrollBy({left: 300, behavior: 'smooth'})">
+                <i class="bi bi-chevron-right"></i>
+            </button>
+        </div>
+    </div>
+
+    <?php if (!empty($relatedProducts)): ?>
+        <div class="related-scroll-container d-flex g-4 overflow-x-auto pb-3" id="relatedScroll">
             <?php foreach ($relatedProducts as $rp): ?>
                 <?php 
                     $rpFinalPrice = ($rp['discount'] > 0) ? $rp['price'] - ($rp['price'] * $rp['discount'] / 100) : $rp['price'];
                     $rpImageUrl = getImgUrl($rp['thumbnail'] ?: ($rp['primary_image'] ?: ''));
-                    
-                    // Wishlist Check
                     $isWishlisted = !empty($wishlistProductMap[$rp['product_id']]);
                     $wishlistIconClasses = $isWishlisted ? 'bi bi-heart-fill' : 'bi bi-heart';
                     $wishlistActiveClass = $isWishlisted ? 'wishlist-active' : '';
                 ?>
-                <div class="col-6 col-md-3">
-                    <div class="product-card bg-white p-3 h-100">
+                <div class="related-product-item flex-shrink-0" style="width: 280px; margin-right: 1.5rem;">
+                    <div class="product-card bg-white p-3 h-100 border rounded">
                         <?php if (($rp['discount'] ?? 0) > 0): ?>
                             <span class="badge-sale">-<?= number_format($rp['discount'], 0) ?>%</span>
                         <?php endif; ?>
 
                         <div class="image-wrapper">
                             <a href="product_details.php?id=<?= $rp['product_id'] ?>">
-                                <img src="<?= htmlspecialchars($rpImageUrl) ?>" alt="<?= htmlspecialchars($rp['name']) ?>">
+                                <img src="<?= htmlspecialchars($rpImageUrl) ?>" alt="<?= htmlspecialchars($rp['name']) ?>" class="img-fluid rounded">
                             </a>
 
                             <div class="overlay-actions">
@@ -752,40 +753,32 @@ $relatedProducts = $relatedStmt->fetchAll(PDO::FETCH_ASSOC);
                                     <button type="button" class="overlay-btn wishlist-heart <?= $wishlistActiveClass ?>" 
                                             title="Add to Wishlist"
                                             data-id="<?= $rp['product_id'] ?>"
-                                            data-name="<?= htmlspecialchars($rp['name']) ?>"
-                                            data-price="<?= $rpFinalPrice ?>"
-                                            data-image="<?= htmlspecialchars($rpImageUrl) ?>"
                                             onclick="event.stopPropagation(); toggleWishlist(this)">
                                         <i class="<?= $wishlistIconClasses ?>"></i>
                                     </button>
                                 <?php else: ?>
-                                    <button type="button" class="overlay-btn" title="Add to Cart" data-bs-toggle="modal" data-bs-target="#loginModal">
-                                        <i class="bi bi-cart-plus"></i>
-                                    </button>
-                                    <button type="button" class="overlay-btn text-danger" title="Add to Wishlist" data-bs-toggle="modal" data-bs-target="#loginModal">
-                                        <i class="bi bi-heart"></i>
-                                    </button>
+                                    <button type="button" class="overlay-btn" data-bs-toggle="modal" data-bs-target="#loginModal"><i class="bi bi-cart-plus"></i></button>
+                                    <button type="button" class="overlay-btn text-danger" data-bs-toggle="modal" data-bs-target="#loginModal"><i class="bi bi-heart"></i></button>
                                 <?php endif; ?>
                             </div>
                         </div>
 
                         <div class="d-flex justify-content-between align-items-center small mb-1">
-                        <span class="category-label text-uppercase"><?= htmlspecialchars($product['category_name'] ?? 'Electronics') ?></span>
-                        <span class="text-warning">
-                            <i class="bi bi-star-fill"></i> 
-                            <?= number_format($rp['avg_rating'], 1) ?> 
-                            <span class="text-secondary">(<?= $rp['total_reviews'] ?>)</span>
-                        </span>
+                            <span class="category-label text-uppercase text-muted" style="font-size: 0.7rem;"><?= htmlspecialchars($product['category_name'] ?? 'Electronics') ?></span>
+                            <span class="text-warning">
+                                <i class="bi bi-star-fill"></i> 
+                                <?= number_format($rp['avg_rating'], 1) ?> 
+                            </span>
                         </div>
 
-                        <h3 class="product-title mb-2" style="font-size: 1rem; font-weight: 700;">
-                            <a href="product_details.php?id=<?= $rp['product_id'] ?>" class="text-decoration-none text-reset">
+                        <h3 class="product-title mb-2 text-truncate" style="font-size: 1rem; font-weight: 700;">
+                            <a href="product_details.php?id=<?= $rp['product_id'] ?>" class="text-decoration-none text-dark">
                                 <?= htmlspecialchars($rp['name']) ?>
                             </a>
                         </h3>
                         
                         <div class="price-wrapper">
-                            <span class="current-price" style="color: var(--accent-color); font-weight: 700;">₹<?= number_format($rpFinalPrice, 2) ?></span>
+                            <span class="current-price text-danger fw-bold">₹<?= number_format($rpFinalPrice, 2) ?></span>
                             <?php if ($rp['discount'] > 0): ?>
                                 <span class="old-price text-muted text-decoration-line-through small ms-1">₹<?= number_format($rp['price'], 2) ?></span>
                             <?php endif; ?>
@@ -793,10 +786,10 @@ $relatedProducts = $relatedStmt->fetchAll(PDO::FETCH_ASSOC);
                     </div>
                 </div>
             <?php endforeach; ?>
-        <?php else: ?>
-            <div class="col-12 text-center text-muted py-4">No related products found.</div>
-        <?php endif; ?>
-    </div>
+        </div>
+    <?php else: ?>
+        <div class="text-center text-muted py-4">No related products found.</div>
+    <?php endif; ?>
 </div>
 
 </div>
@@ -806,28 +799,68 @@ $relatedProducts = $relatedStmt->fetchAll(PDO::FETCH_ASSOC);
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 
+
+<div class="modal fade" id="imageModal" tabindex="-1" aria-hidden="true" style="z-index: 9999;">
+    <div class="modal-dialog modal-dialog-centered modal-xl">
+        <div class="modal-content bg-transparent border-0">
+            <div class="modal-header border-0 p-0">
+                <button type="button" class="btn-close btn-close-white ms-auto m-2" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body text-center p-0">
+                <img id="fullViewImg" src="" class="full-view-img shadow-lg" style="max-width: 100%; max-height: 90vh; object-fit: contain;">
+            </div>
+        </div>
+    </div>
+</div>
+
 <script>
-    // 1. Image Gallery Logic
+    /**
+     * 1. Image Gallery Logic
+     * Switches the main image when a thumbnail is clicked
+     */
     function changeImage(src, element) {
-        document.getElementById('mainImage').src = src;
-        
-        // Remove active class from all thumbs
-        document.querySelectorAll('.thumb-btn').forEach(btn => btn.classList.remove('active'));
-        // Add active class to clicked thumb
-        element.classList.add('active');
+        const mainImg = document.getElementById('mainImage');
+        if (mainImg) {
+            mainImg.src = src;
+            
+            // UI Feedback: Update active thumbnail border
+            document.querySelectorAll('.thumb-btn').forEach(btn => btn.classList.remove('active'));
+            element.classList.add('active');
+        }
     }
 
-    // 2. Quantity Logic
+    /**
+     * 2. Full View Modal Logic
+     * Opens the XL modal with the high-res source of the current main image
+     */
+    function openFullView() {
+        const mainImg = document.getElementById('mainImage');
+        const modalImg = document.getElementById('fullViewImg');
+        
+        if (mainImg && modalImg) {
+            // Transfer the current source to the modal image
+            modalImg.src = mainImg.src;
+            
+            // Initialize and show the Bootstrap Modal
+            const myModal = new bootstrap.Modal(document.getElementById('imageModal'));
+            myModal.show();
+        }
+    }
+
+    /**
+     * 3. Quantity Logic
+     * Handles increment/decrement for the quantity input
+     */
     function updateQty(change) {
         const input = document.getElementById('qtyInput');
-        let newVal = parseInt(input.value) + change;
-        if (newVal < 1) newVal = 1;
-        // Optional: Check max stock
-        // if (newVal > <?= $product['stock'] ?>) newVal = <?= $product['stock'] ?>;
-        input.value = newVal;
+        if (input) {
+            let newVal = parseInt(input.value) + change;
+            if (newVal < 1) newVal = 1;
+            input.value = newVal;
+        }
     }
 
-    // 3. Add to Cart Logic
+
     function addToCart() {
         const productId = document.querySelector('input[name="product_id"]').value;
         const quantity = document.getElementById('qtyInput').value;
