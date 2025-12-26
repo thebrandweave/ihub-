@@ -58,6 +58,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Admin Login - iHUB</title>
+
+  <link rel="icon" type="image/png" sizes="32x32" href="<?= $BASE_URL ?>favicon.png">
+  <link rel="shortcut icon" href="<?= $BASE_URL ?>favicon.png">
   <style>
     /* The following CSS is designed to mimic the Tailwind classes 
     used in your admin dashboard (e.g., rounded-xl, shadow-lg, red gradients).

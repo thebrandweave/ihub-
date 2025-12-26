@@ -115,6 +115,9 @@ function getPaymentStatusBadge($status) {
 <html>
 <head>
 <title>Order Details — iHub Electronics</title>
+<link rel="icon" type="image/png" sizes="32x32" href="<?= $BASE_URL ?>favicon.png">
+<link rel="shortcut icon" href="<?= $BASE_URL ?>favicon.png">
+
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
 <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
 <style>

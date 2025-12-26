@@ -150,6 +150,8 @@ $relatedProducts = $relatedStmt->fetchAll(PDO::FETCH_ASSOC);
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title><?= htmlspecialchars($product['name']) ?> — iHub Electronics</title>
+    <link rel="icon" type="image/png" sizes="32x32" href="<?= $BASE_URL ?>favicon.png">
+    <link rel="shortcut icon" href="<?= $BASE_URL ?>favicon.png">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
 

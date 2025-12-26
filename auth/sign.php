@@ -52,6 +52,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Sign Up - iHUB</title>
+  <link rel="icon" type="image/png" sizes="32x32" href="<?= $BASE_URL ?>favicon.png">
+  <link rel="shortcut icon" href="<?= $BASE_URL ?>favicon.png">
   <style>
     /* UI Design matching login.php */
     body {
