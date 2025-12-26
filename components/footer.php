@@ -85,7 +85,7 @@ function getSocialIcon($name) {
         <ul class="list-unstyled small">
           <li class="mb-2"><a href="<?= getProtectedLink($BASE_URL . 'account/orders.php', $BASE_URL) ?>" class="text-decoration-none text-secondary">My Orders</a></li>
           <li class="mb-2"><a href="<?= getProtectedLink($BASE_URL . 'wishlist/', $BASE_URL) ?>" class="text-decoration-none text-secondary">Wishlist</a></li>
-          <li class="mb-2"><a href="<?= $BASE_URL ?>cart/" class="text-decoration-none text-secondary">My Cart</a></li>
+          <li class="mb-2"><a href="<?= getProtectedLink($BASE_URL . 'cart/', $BASE_URL) ?>" class="text-decoration-none text-secondary">My Cart</a></li>
           <li class="mb-2"><a href="<?= $BASE_URL ?>contact/" class="text-decoration-none text-secondary">Support</a></li>
         </ul>
       </div>
